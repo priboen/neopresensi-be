@@ -12,3 +12,9 @@ export const PermissionProvider = {
   provide: 'PERMISSION_REPOSITORY',
   useValue: Permission
 };
+
+export const modelProviders = [
+  userProvider,
+  attendanceProvider,
+  PermissionProvider
+];
