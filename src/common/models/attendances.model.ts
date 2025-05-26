@@ -1,8 +1,8 @@
 import { BelongsTo, Column, DataType, Default, ForeignKey, Model, PrimaryKey, Table } from "sequelize-typescript";
-import { User } from "./users.model";
+import { User } from "./user.model";
 
 @Table({ tableName: "attendances", timestamps: true })
-export class Attendance extends Model<Attendance>{
+export class Attendance extends Model{
   @PrimaryKey
   @Default(DataType.UUIDV4)
   @Column({ type: DataType.UUID, allowNull: false })
