@@ -17,7 +17,60 @@ export class AuthService {
     return userWithoutPassword;
   }
 
-  private async validateLogin(loginData: LoginDTO, requiredRole: 'admin' | 'guru'): Promise<ResponseDto<{ token: string }>> {
+  // private async validateLogin(loginData: LoginDTO, requiredRole: 'admin' | 'guru'): Promise<ResponseDto<{ token: string }>> {
+  //   try {
+  //     const user = await this.userRepository.findOne({
+  //       where: { username: loginData.username },
+  //     });
+  //     if (!user) {
+  //       return new ResponseDto<{ token: string }>({
+  //         statusCode: 401,
+  //         message: 'Invalid username or password',
+  //       });
+  //     }
+  //     const userData = user.toJSON();
+  //     const isPasswordValid = await bcrypt.compare(
+  //       loginData.password,
+  //       userData.password,
+  //     );
+  //     if (!isPasswordValid) {
+  //       return new ResponseDto<{ token: string }>({
+  //         statusCode: 401,
+  //         message: 'Invalid username or password',
+  //       });
+  //     }
+  //     if (userData.role !== requiredRole) {
+  //       const errorMessage = requiredRole === 'admin'
+  //         ? 'Web login is restricted to admin users'
+  //         : 'Android login is restricted to teacher role';
+  //       throw new UnauthorizedException(errorMessage);
+  //     }
+  //     const token = await this.jwtService.signAsync({ uuid: userData.uuid, role: userData.role });
+  //     return new ResponseDto<{ token: string }>({
+  //       statusCode: 200,
+  //       message: 'Login successful',
+  //       data: { token },
+  //     });
+  //   } catch (error) {
+  //     if (error instanceof UnauthorizedException) {
+  //       return new ResponseDto<{ token: string }>({
+  //         statusCode: 401,
+  //         message: error.message,
+  //       });
+  //     }
+  //     throw new InternalServerErrorException('An error occurred during login', error.message);
+  //   }
+  // }
+
+  // async loginWeb(loginData: LoginDTO): Promise<ResponseDto<{ token: string }>> {
+  //   return this.validateLogin(loginData, 'admin');
+  // }
+
+  // async loginAndroid(loginData: LoginDTO): Promise<ResponseDto<{ token: string }>> {
+  //   return this.validateLogin(loginData, 'guru');
+  // }
+
+  async login(loginData: LoginDTO): Promise<ResponseDto<{ token: string }>> {
     try {
       const user = await this.userRepository.findOne({
         where: { username: loginData.username },
@@ -39,12 +92,6 @@ export class AuthService {
           message: 'Invalid username or password',
         });
       }
-      if (userData.role !== requiredRole) {
-        const errorMessage = requiredRole === 'admin'
-          ? 'Web login is restricted to admin users'
-          : 'Android login is restricted to teacher role';
-        throw new UnauthorizedException(errorMessage);
-      }
       const token = await this.jwtService.signAsync({ uuid: userData.uuid, role: userData.role });
       return new ResponseDto<{ token: string }>({
         statusCode: 200,
@@ -52,22 +99,8 @@ export class AuthService {
         data: { token },
       });
     } catch (error) {
-      if (error instanceof UnauthorizedException) {
-        return new ResponseDto<{ token: string }>({
-          statusCode: 401,
-          message: error.message,
-        });
-      }
       throw new InternalServerErrorException('An error occurred during login', error.message);
     }
-  }
-
-  async loginWeb(loginData: LoginDTO): Promise<ResponseDto<{ token: string }>> {
-    return this.validateLogin(loginData, 'admin');
-  }
-
-  async loginAndroid(loginData: LoginDTO): Promise<ResponseDto<{ token: string }>> {
-    return this.validateLogin(loginData, 'guru');
   }
 
   async register(registerData: RegisterDTO): Promise<ResponseDto<User>> {

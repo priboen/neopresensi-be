@@ -9,23 +9,13 @@ import { RegisterDTO } from 'src/common/dto';
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  @Post('/login-web')
-  @ApiOperation({ summary: 'Admin Login for Web', description: 'User with admin role send a request to the server for log in into Admin Dashboard' })
-  @ApiBody({ type: LoginDTO })
-  @ApiResponse({ type: AuthSuccessResponseDto, status: 201, description: 'Login successful' })
-  @ApiResponse({ type: NotFoundResponseDto, status: 204, description: 'Invalid username or password' })
-  @ApiResponse({ type: AuthInvalidResponseDto, status: 400, description: 'Invalid username or password' })
-  async loginWeb(@Body() signInData: LoginDTO): Promise<AuthSuccessResponseDto | NotFoundResponseDto | AuthInvalidResponseDto> {
-    return this.authService.loginWeb(signInData);
-  }
-
-  @Post('/login-android')
-  @ApiOperation({ summary: 'User Login for MobileApps', description: 'User with user role send a request to the server for log in into Mobile Apps' })
+  @Post('/login')
+  @ApiOperation({ summary: 'Login', description: 'User  send a request to the server for log in into Mobile Apps or Website' })
   @ApiResponse({ type: AuthSuccessResponseDto, status: 201, description: 'Login successful' })
   @ApiResponse({ type: NotFoundResponseDto, status: 204, description: 'Invalid username or password' })
   @ApiResponse({ type: AuthInvalidResponseDto, status: 400, description: 'Invalid username or password' })
   async loginAndroid(@Body() signInData: LoginDTO): Promise<AuthSuccessResponseDto | NotFoundResponseDto | AuthInvalidResponseDto> {
-    return this.authService.loginAndroid(signInData);
+    return this.authService.login(signInData);
   }
 
   @Post('/register')
