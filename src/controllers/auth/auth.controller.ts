@@ -11,7 +11,7 @@ export class AuthController {
 
   @Post('/login')
   @ApiOperation({ summary: 'Login', description: 'User  send a request to the server for log in into Mobile Apps or Website' })
-  @ApiResponse({ type: AuthSuccessResponseDto, status: 201, description: 'Login successful' })
+  @ApiResponse({ type: AuthSuccessResponseDto, status: 200, description: 'Login successful' })
   @ApiResponse({ type: NotFoundResponseDto, status: 204, description: 'Invalid username or password' })
   @ApiResponse({ type: AuthInvalidResponseDto, status: 400, description: 'Invalid username or password' })
   async loginAndroid(@Body() signInData: LoginDTO): Promise<AuthSuccessResponseDto | NotFoundResponseDto | AuthInvalidResponseDto> {

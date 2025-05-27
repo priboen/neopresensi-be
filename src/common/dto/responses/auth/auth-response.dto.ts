@@ -3,7 +3,7 @@ import { User } from 'src/common/models';
 
 export class AuthSuccessResponseDto {
   @ApiProperty({ description: 'HTTP status code for successful login', example: 201 })
-  @ApiProperty({ example: 201 })
+  @ApiProperty({ example: 200 })
   statusCode: number;
   @ApiProperty({ example: 'Login successful' })
   message: string;
