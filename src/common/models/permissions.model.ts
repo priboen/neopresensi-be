@@ -1,7 +1,17 @@
-import { BelongsTo, Column, DataType, Default, ForeignKey, Model, PrimaryKey, Table } from "sequelize-typescript";
-import { User } from "./user.model";
+import {
+  BelongsTo,
+  Column,
+  DataType,
+  Default,
+  ForeignKey,
+  Model,
+  PrimaryKey,
+  Table,
+} from 'sequelize-typescript';
+import { User } from './user.model';
+import { PermissionStatus } from '../enums';
 
-@Table({ tableName: "permissions", timestamps: true })
+@Table({ tableName: 'permissions', timestamps: true })
 export class Permission extends Model {
   @PrimaryKey
   @Default(DataType.UUIDV4)
@@ -35,7 +45,14 @@ export class Permission extends Model {
     allowNull: false,
     defaultValue: 'pending',
   })
-  status: 'pending' | 'approved' | 'rejected';
+  status: PermissionStatus;
+
+  @Column({
+    type: DataType.STRING,
+    allowNull: false,
+    comment: 'URL to uploaded file (image/pdf)',
+  })
+  file_url: string | null;
 
   @BelongsTo(() => User)
   user: User;
