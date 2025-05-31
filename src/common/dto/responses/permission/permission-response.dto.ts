@@ -24,6 +24,31 @@ export class CreatePermissionResponse {
   data: Permission;
 }
 
+export class GetAllPermissionResponse {
+  @ApiProperty({ example: 200 })
+  statusCode: number;
+
+  @ApiProperty({ example: 'Permissions retrieved successfully' })
+  message: string;
+
+  @ApiProperty({
+    example: [
+      {
+        uuid: '95dbb2db-7d01-4052-8b5d-373048ec497f',
+        user_uuid: 'd6eadd63-ca3f-4faa-b08e-a28087eba2db',
+        start_date: '2025-05-30',
+        end_date: '2025-06-15',
+        reason: 'Naik haji',
+        status: 'approved',
+        file_url: 'http://localhost:4000/uploads/file.jpeg',
+        createdAt: '2025-05-30T16:42:47.000Z',
+        updatedAt: '2025-05-30T16:42:47.000Z',
+      },
+    ],
+  })
+  data: Permission[];
+}
+
 export class GetPermissionThisMonthResponse {
   @ApiProperty({ example: 200 })
   statusCode: number;
