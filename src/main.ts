@@ -1,9 +1,11 @@
-import { NestFactory, Reflector } from '@nestjs/core';
+import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { config } from 'dotenv';
 import { RequestMethod, ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { apiReference } from '@scalar/nestjs-api-reference';
+import * as express from 'express';
+import { join } from 'path';
 
 config();
 
@@ -39,6 +41,7 @@ async function bootstrap() {
       },
     }),
   );
+  app.use('/uploads', express.static(join(__dirname, '..', 'uploads')));
   const port = Number(process.env.APP_PORT);
   await app.listen(port);
 }
