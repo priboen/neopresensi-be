@@ -24,16 +24,26 @@ import { CurrentUser, Roles } from 'src/common/decorators';
 import { JwtPayload } from 'src/common/interfaces';
 import { Role } from 'src/common/enums';
 import {
+  BadRequestResponse,
   CreatePermissionDto,
+  CreatePermissionResponse,
+  DeletePermissionResponse,
+  ForbiddenResponse,
+  GetPermissionDetailResponse,
+  GetPermissionThisMonthResponse,
+  InternalServerErrorResponse,
+  NotFoundResponse,
   ResponseDto,
+  UnauthorizedResponse,
   UpdatePermissionStatusDto,
+  UpdatePermissionStatusResponse,
 } from 'src/common/dto';
 import { FileUploadInterceptor } from 'src/common/interceptor';
 import { ConfigService } from '@nestjs/config';
 import { getFullFileUrl } from 'src/common/utils';
 
 @ApiTags('Permissions')
-@UseGuards(JwtAuthGuard,RolesGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('permissions')
 export class PermissionsController {
   constructor(
@@ -43,9 +53,9 @@ export class PermissionsController {
   @Post()
   @Roles(Role.Guru)
   @ApiOperation({
-    summary: 'Create permission with local file upload',
+    summary: 'Buat pengajuan izin (Guru)',
     description:
-      'User with role "Guru" can create a permission request with an uploaded file.',
+      'Endpoint ini digunakan oleh pengguna dengan peran "Guru" untuk membuat pengajuan izin baru dengan mengunggah file pendukung seperti gambar atau PDF.',
   })
   @ApiConsumes('multipart/form-data')
   @ApiBody({
@@ -59,6 +69,26 @@ export class PermissionsController {
         file: { type: 'string', format: 'binary' },
       },
     },
+  })
+  @ApiResponse({
+    type: CreatePermissionResponse,
+    status: 201,
+    description: 'Permission created successfully',
+  })
+  @ApiResponse({
+    type: BadRequestResponse,
+    status: 400,
+    description: 'Invalid input or file missing',
+  })
+  @ApiResponse({
+    type: UnauthorizedResponse,
+    status: 401,
+    description: 'Unauthorized',
+  })
+  @ApiResponse({
+    type: ForbiddenResponse,
+    status: 403,
+    description: 'Access restricted to Guru role',
   })
   @UseInterceptors(FileUploadInterceptor)
   async createPermission(
@@ -106,19 +136,56 @@ export class PermissionsController {
 
   @Get('this-month')
   @ApiOperation({
-    summary: 'Get permissions of the current month for logged-in user',
+    summary: 'Lihat izin bulan ini',
     description:
-      'Fetches all permissions for the current month for the user making the request.',
+      'Mengambil seluruh data izin milik pengguna yang sedang login untuk periode bulan berjalan berdasarkan tanggal mulai izin.',
   })
-  @ApiResponse({ status: 200, description: 'Permissions fetched successfully' })
+  @ApiResponse({
+    type: GetPermissionThisMonthResponse,
+    status: 200,
+    description: 'Permissions for this month retrieved successfully',
+  })
+  @ApiResponse({
+    type: UnauthorizedResponse,
+    status: 401,
+    description: 'Unauthorized',
+  })
   async getPermissionsThisMonth(@CurrentUser() user: JwtPayload) {
     return this.permissionsService.getPermissionsThisMonth(user.uuid);
   }
 
   @Patch(':uuid/status')
   @Roles(Role.Admin)
-  @ApiOperation({ summary: 'Update permission status (admin only)' })
-  @ApiResponse({ status: 200, description: 'Status updated successfully' })
+  @ApiOperation({
+    summary: 'Ubah status izin (Admin)',
+    description:
+      'Digunakan oleh admin untuk memperbarui status dari pengajuan izin tertentu, misalnya menjadi "approved" atau "rejected".',
+  })
+  @ApiResponse({
+    type: UpdatePermissionStatusResponse,
+    status: 200,
+    description: 'Permission status updated successfully',
+  })
+  @ApiResponse({
+    type: NotFoundResponse,
+    status: 404,
+    description: 'Permission not found',
+  })
+  @ApiResponse({
+    type: UnauthorizedResponse,
+    status: 401,
+    description: 'Unauthorized',
+  })
+  @ApiResponse({
+    type: ForbiddenResponse,
+    status: 403,
+    description: 'Only admins allowed',
+  })
+  @ApiResponse({
+    type: InternalServerErrorResponse,
+    status: 500,
+    description: 'Unexpected error occurred',
+  })
   async updateStatus(
     @Param('uuid') uuid: string,
     @Body() dto: UpdatePermissionStatusDto,
@@ -128,8 +195,31 @@ export class PermissionsController {
 
   @Delete(':uuid')
   @Roles(Role.Guru)
-  @ApiOperation({ summary: 'Delete own permission (guru only)' })
-  @ApiResponse({ status: 200, description: 'Permission deleted successfully' })
+  @ApiOperation({
+    summary: 'Hapus pengajuan izin (Guru)',
+    description:
+      'Pengguna dengan peran "Guru" dapat menghapus pengajuan izin miliknya sendiri. File pendukung yang diunggah juga akan dihapus dari penyimpanan lokal.',
+  })
+  @ApiResponse({
+    type: DeletePermissionResponse,
+    status: 200,
+    description: 'Permission deleted with file',
+  })
+  @ApiResponse({
+    type: NotFoundResponse,
+    status: 404,
+    description: 'Permission not found',
+  })
+  @ApiResponse({
+    type: UnauthorizedResponse,
+    status: 401,
+    description: 'Unauthorized',
+  })
+  @ApiResponse({
+    type: ForbiddenResponse,
+    status: 403,
+    description: "Cannot delete others' permissions",
+  })
   async deletePermission(
     @Param('uuid') uuid: string,
     @CurrentUser() user: JwtPayload,
@@ -138,8 +228,26 @@ export class PermissionsController {
   }
 
   @Get(':uuid')
-  @ApiOperation({ summary: 'Get permission details by UUID' })
-  @ApiResponse({ status: 200, description: 'Permission details retrieved' })
+  @ApiOperation({
+    summary: 'Lihat detail izin berdasarkan UUID',
+    description:
+      'Mengambil informasi lengkap dari sebuah pengajuan izin berdasarkan UUID-nya. Cocok digunakan untuk menampilkan detail dalam halaman detail pengajuan.',
+  })
+  @ApiResponse({
+    type: GetPermissionDetailResponse,
+    status: 200,
+    description: 'Permission details retrieved successfully',
+  })
+  @ApiResponse({
+    type: NotFoundResponse,
+    status: 404,
+    description: 'Permission not found',
+  })
+  @ApiResponse({
+    type: UnauthorizedResponse,
+    status: 401,
+    description: 'Unauthorized',
+  })
   async getDetail(@Param('uuid') uuid: string) {
     return this.permissionsService.getDetail(uuid);
   }
