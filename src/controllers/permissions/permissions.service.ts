@@ -5,7 +5,6 @@ import { PermissionStatus } from 'src/common/enums';
 import { Permission } from 'src/common/models';
 import * as fs from 'fs';
 import * as path from 'path';
-import { raw } from 'mysql2';
 
 @Injectable()
 export class PermissionsService {
@@ -81,6 +80,53 @@ export class PermissionsService {
         statusCode: 500,
         message:
           'An error occurred while creating the permission : ' + error.message,
+      });
+    }
+  }
+
+  async getAllPermissions(filters: {
+    status?: PermissionStatus;
+    month?: string;
+  }): Promise<ResponseDto<Permission[]>> {
+    try {
+      const where: any = {};
+
+      // Filter status
+      if (filters.status) {
+        where.status = filters.status;
+      }
+
+      // Filter bulan
+      if (filters.month) {
+        const [year, month] = filters.month.split('-').map(Number);
+        if (!year || !month || month < 1 || month > 12) {
+          return new ResponseDto({
+            statusCode: 400,
+            message: 'Format bulan tidak valid. Gunakan format YYYY-MM',
+          });
+        }
+        const startOfMonth = new Date(year, month - 1, 1);
+        const endOfMonth = new Date(year, month, 0);
+        where.start_date = {
+          [Op.between]: [startOfMonth, endOfMonth],
+        };
+      }
+
+      const permissions = await this.permissionRepository.findAll({
+        where,
+        order: [['createdAt', 'DESC']],
+      });
+
+      return new ResponseDto<Permission[]>({
+        statusCode: 200,
+        message: 'Permissions retrieved successfully',
+        data: permissions,
+      });
+    } catch (error) {
+      return new ResponseDto({
+        statusCode: 500,
+        message:
+          'An error occurred while retrieving permissions: ' + error.message,
       });
     }
   }

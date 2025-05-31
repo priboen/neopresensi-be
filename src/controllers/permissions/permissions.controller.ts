@@ -1,5 +1,4 @@
 import {
-  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -7,6 +6,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   UploadedFile,
   UseGuards,
   UseInterceptors,
@@ -22,13 +22,14 @@ import {
 import { JwtAuthGuard, RolesGuard } from 'src/common/guards';
 import { CurrentUser, Roles } from 'src/common/decorators';
 import { JwtPayload } from 'src/common/interfaces';
-import { Role } from 'src/common/enums';
+import { Role, PermissionStatus } from 'src/common/enums';
 import {
   BadRequestResponse,
   CreatePermissionDto,
   CreatePermissionResponse,
   DeletePermissionResponse,
   ForbiddenResponse,
+  GetAllPermissionResponse,
   GetPermissionDetailResponse,
   GetPermissionThisMonthResponse,
   InternalServerErrorResponse,
@@ -132,6 +133,27 @@ export class PermissionsController {
       start_date: startDate,
       end_date: new Date(createPermissionDto.end_date),
     });
+  }
+
+  @Roles(Role.Admin)
+  @Get()
+  @ApiOperation({
+    summary: 'Lihat semua data perizinan (Admin)',
+    description:
+      'Admin dapat melihat semua data perizinan, dengan filter status dan bulan.',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Data perizinan berhasil diambil',
+    type: GetAllPermissionResponse,
+  })
+  @ApiResponse({ type: UnauthorizedResponse, status: 401 })
+  @ApiResponse({ type: ForbiddenResponse, status: 403 })
+  async getAllPermissionsForAdmin(
+    @Query('status') status?: PermissionStatus,
+    @Query('month') month?: string,
+  ) {
+    return this.permissionsService.getAllPermissions({ status, month });
   }
 
   @Get('this-month')
