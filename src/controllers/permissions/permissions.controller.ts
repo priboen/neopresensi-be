@@ -19,7 +19,7 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { JwtAuthGuard } from 'src/common/guards';
+import { JwtAuthGuard, RolesGuard } from 'src/common/guards';
 import { CurrentUser, Roles } from 'src/common/decorators';
 import { JwtPayload } from 'src/common/interfaces';
 import { Role } from 'src/common/enums';
@@ -33,7 +33,7 @@ import { ConfigService } from '@nestjs/config';
 import { getFullFileUrl } from 'src/common/utils';
 
 @ApiTags('Permissions')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard,RolesGuard)
 @Controller('permissions')
 export class PermissionsController {
   constructor(

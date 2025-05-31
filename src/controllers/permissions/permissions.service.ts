@@ -5,6 +5,7 @@ import { PermissionStatus } from 'src/common/enums';
 import { Permission } from 'src/common/models';
 import * as fs from 'fs';
 import * as path from 'path';
+import { raw } from 'mysql2';
 
 @Injectable()
 export class PermissionsService {
@@ -156,48 +157,51 @@ export class PermissionsService {
 
   async deletePermission(
     uuid: string,
-    userUuid: string,
-  ): Promise<ResponseDto<void>> {
+    userUuidFromJwt: string,
+  ): Promise<ResponseDto<Permission>> {
     try {
       const permission = await this.permissionRepository.findOne({
         where: { uuid },
+        raw: false,
       });
+
       if (!permission) {
-        return new ResponseDto<void>({
+        return new ResponseDto({
           statusCode: 404,
           message: 'Data izin tidak ditemukan',
         });
       }
 
-      if (permission.user_uuid !== userUuid) {
-        return new ResponseDto<void>({
+      // Validasi owner berdasarkan JWT
+      const actualUserUuid = permission.getDataValue('user_uuid');
+      if (actualUserUuid !== userUuidFromJwt) {
+        return new ResponseDto({
           statusCode: 403,
           message: 'Anda tidak memiliki izin untuk menghapus data ini',
         });
       }
 
-      // Hapus file fisik
-      if (permission.file_url) {
-        // Extract path lokal, misal hapus 'http://localhost:4000' dari URL
-        const filePath = permission.file_url.replace(/^http:\/\/[^\/]+/, '');
-        // Buat path absolut sesuai lokasi uploads di project
-        const fullPath = path.join(process.cwd(), filePath);
+      const fileUpload = permission.getDataValue('file_url');
 
-        // Cek file ada dan hapus
+      // Hapus file jika ada
+      if (fileUpload) {
+        const filePath = fileUpload.replace(/^https?:\/\/[^\/]+/, '');
+        const fullPath = path.join(process.cwd(), filePath);
+        console.log('Full file path to delete:', fullPath);
+
         if (fs.existsSync(fullPath)) {
           fs.unlinkSync(fullPath);
         }
       }
 
-      // Hapus data permission dari DB
       await permission.destroy();
 
-      return new ResponseDto<void>({
+      return new ResponseDto({
         statusCode: 200,
         message: 'Perizinan berhasil dihapus beserta file terkait',
       });
     } catch (error) {
-      return new ResponseDto<void>({
+      return new ResponseDto({
         statusCode: 500,
         message: 'Terjadi kesalahan saat menghapus perizinan: ' + error.message,
       });
