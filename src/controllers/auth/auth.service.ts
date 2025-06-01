@@ -29,7 +29,7 @@ export class AuthService {
       if (!user) {
         return new ResponseDto<{ token: string }>({
           statusCode: 401,
-          message: 'Invalid username or password',
+          message: 'Username dan password salah',
         });
       }
       const userData = user.toJSON();
@@ -40,7 +40,7 @@ export class AuthService {
       if (!isPasswordValid) {
         return new ResponseDto<{ token: string }>({
           statusCode: 401,
-          message: 'Invalid username or password',
+          message: 'Username dan password salah',
         });
       }
       const token = await this.jwtService.signAsync({
@@ -49,12 +49,12 @@ export class AuthService {
       });
       return new ResponseDto<{ token: string }>({
         statusCode: 200,
-        message: 'Login successful',
+        message: 'Login berhasil',
         data: { token },
       });
     } catch (error) {
       throw new InternalServerErrorException(
-        'An error occurred during login',
+        'Terjadi kesalahan saat login: ',
         error.message,
       );
     }
@@ -74,7 +74,7 @@ export class AuthService {
       if (existingUser) {
         return new ResponseDto<User>({
           statusCode: 409,
-          message: 'Username or Email already registered',
+          message: 'Username atau email sudah terdaftar',
         });
       }
       const user = await this.userRepository.create({
@@ -84,7 +84,7 @@ export class AuthService {
       const newUser = this.removePassword(user);
       return new ResponseDto<User>({
         statusCode: 201,
-        message: 'Registered successfully, please login',
+        message: 'Registrasi berhasil, silakan login',
         data: newUser,
       });
     } catch (error) {

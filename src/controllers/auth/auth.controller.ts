@@ -18,24 +18,24 @@ export class AuthController {
 
   @Post('/login')
   @ApiOperation({
-    summary: 'Login',
+    summary: 'Login Pengguna',
     description:
-      'User  send a request to the server for log in into Mobile Apps or Website',
+      'Endpoint untuk masuk ke dalam aplikasi menggunakan username dan password yang valid.',
   })
   @ApiResponse({
     type: AuthSuccessResponseDto,
     status: 200,
-    description: 'Login successful',
+    description: 'Login berhasil. Token dikembalikan.',
   })
   @ApiResponse({
     type: NotFoundResponseDto,
     status: 204,
-    description: 'Invalid username or password',
+    description: 'Data pengguna tidak ditemukan.',
   })
   @ApiResponse({
     type: AuthInvalidResponseDto,
     status: 400,
-    description: 'Invalid username or password',
+    description: 'Username atau password tidak valid.',
   })
   async loginAndroid(
     @Body() signInData: LoginDTO,
@@ -47,24 +47,24 @@ export class AuthController {
 
   @Post('/register')
   @ApiOperation({
-    summary: 'Register',
+    summary: 'Register Pengguna',
     description:
-      'User send a request to the server for sign up into Mobile Apps',
+      'Endpoint untuk membuat akun baru di aplikasi dengan data yang valid. Email dan username harus unik.',
   })
   @ApiResponse({
     type: RegisterSuccessResponseDto,
     status: 201,
-    description: 'Registered successfully, please login',
+    description: 'Register berhasil. Data pengguna baru dikembalikan.',
   })
   @ApiResponse({
     type: ValidationErrorResponseDto,
     status: 400,
-    description: 'Bad Request',
+    description: 'Validasi data gagal. Periksa format dan keunikan data.',
   })
   @ApiResponse({
     type: DuplicateResponseDto,
     status: 409,
-    description: 'Username or Email already registered',
+    description: 'Nama pengguna atau email sudah digunakan.',
   })
   @ApiBody({ type: RegisterDTO })
   async signUp(@Body() registerData: RegisterDTO) {
