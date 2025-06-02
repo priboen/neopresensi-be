@@ -7,6 +7,7 @@ import { MysqlModule } from './common/modules';
 import { UsersModule } from './controllers/users/users.module';
 import { PermissionsModule } from './controllers/permissions/permissions.module';
 import { FileUploadModule } from './controllers/file-upload/file-upload.module';
+import { FaceEmbeddingModule } from './controllers/face-embedding/face-embedding.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { FileUploadModule } from './controllers/file-upload/file-upload.module';
     UsersModule,
     PermissionsModule,
     FileUploadModule,
+    FaceEmbeddingModule,
   ],
   controllers: [AppController],
   providers: [AppService],
