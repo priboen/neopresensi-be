@@ -37,7 +37,7 @@ export class AuthController {
     status: 400,
     description: 'Username atau password tidak valid.',
   })
-  async loginAndroid(
+  async login(
     @Body() signInData: LoginDTO,
   ): Promise<
     AuthSuccessResponseDto | NotFoundResponseDto | AuthInvalidResponseDto
