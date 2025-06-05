@@ -33,7 +33,7 @@ export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @ApiOperation({
-    summary: 'Get all users',
+    summary: 'Mendapatkan semua data user',
     description:
       'This endpoint is accessible only by users with the `admin` role.',
   })
