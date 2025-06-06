@@ -3,11 +3,11 @@ import { extname } from 'path';
 
 export const multerConfig = {
   storage: diskStorage({
-    destination: './uploads',
+    destination: './uploads/',
     filename: (req, file, callback) => {
       const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
-      const fileExt = extname(file.originalname);
-      const fileName = `${file.fieldname}-${uniqueSuffix}${fileExt}`;
+      const ext = extname(file.originalname);
+      const fileName = `${file.fieldname}-${uniqueSuffix}${ext}`;
       callback(null, fileName);
     },
   }),
