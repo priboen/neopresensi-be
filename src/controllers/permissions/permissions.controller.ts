@@ -103,7 +103,7 @@ export class PermissionsController {
         message: 'File upload is required',
       });
 
-    const filePath = file.path.replace(/\\/g, '/');
+    const filePath = await this.permissionsService.uploadFileToPermissions(file);
     const fileUrl = getFullFileUrl(filePath, this.configService);
     const startDate = new Date(createPermissionDto.start_date);
     const hasConflict = await this.permissionsService.hasOverlappingPermission(

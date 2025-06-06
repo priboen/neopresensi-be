@@ -12,8 +12,14 @@ export class PermissionsService {
     @Inject('PERMISSION_REPOSITORY') private readonly permissionRepository: any,
   ) {}
 
-  async uploadFileToStorage(file: Express.Multer.File): Promise<string> {
-    return file.path.replace(/\\/g, '/');
+  async uploadFileToPermissions(file: Express.Multer.File): Promise<string> {
+    const destFolder = path.join(process.cwd(), 'uploads/permissions');
+    if (!fs.existsSync(destFolder)) {
+      fs.mkdirSync(destFolder, { recursive: true });
+    }
+    const newPath = path.join(destFolder, path.basename(file.path));
+    fs.renameSync(file.path, newPath);
+    return `uploads/permissions/${path.basename(file.path)}`;
   }
 
   async hasOverlappingPermission(
@@ -90,13 +96,9 @@ export class PermissionsService {
   }): Promise<ResponseDto<Permission[]>> {
     try {
       const where: any = {};
-
-      // Filter status
       if (filters.status) {
         where.status = filters.status;
       }
-
-      // Filter bulan
       if (filters.month) {
         const [year, month] = filters.month.split('-').map(Number);
         if (!year || !month || month < 1 || month > 12) {
@@ -111,12 +113,10 @@ export class PermissionsService {
           [Op.between]: [startOfMonth, endOfMonth],
         };
       }
-
       const permissions = await this.permissionRepository.findAll({
         where,
         order: [['createdAt', 'DESC']],
       });
-
       return new ResponseDto<Permission[]>({
         statusCode: 200,
         message: 'Permissions retrieved successfully',
@@ -138,10 +138,8 @@ export class PermissionsService {
       const now = new Date();
       const year = now.getFullYear();
       const month = now.getMonth() + 1;
-
       const startOfMonth = new Date(year, month - 1, 1);
       const endOfMonth = new Date(year, month, 0);
-
       const permissions = await this.permissionRepository.findAll({
         where: {
           user_uuid: userUuid,
@@ -151,7 +149,6 @@ export class PermissionsService {
         },
         order: [['start_date', 'ASC']],
       });
-
       return new ResponseDto<Permission[]>({
         statusCode: 200,
         message: 'Permissions fetched for this month',
@@ -217,8 +214,6 @@ export class PermissionsService {
           message: 'Data izin tidak ditemukan',
         });
       }
-
-      // Validasi owner berdasarkan JWT
       const actualUserUuid = permission.getDataValue('user_uuid');
       if (actualUserUuid !== userUuidFromJwt) {
         return new ResponseDto({
@@ -226,22 +221,16 @@ export class PermissionsService {
           message: 'Anda tidak memiliki izin untuk menghapus data ini',
         });
       }
-
       const fileUpload = permission.getDataValue('file_url');
-
-      // Hapus file jika ada
       if (fileUpload) {
         const filePath = fileUpload.replace(/^https?:\/\/[^\/]+/, '');
         const fullPath = path.join(process.cwd(), filePath);
         console.log('Full file path to delete:', fullPath);
-
         if (fs.existsSync(fullPath)) {
           fs.unlinkSync(fullPath);
         }
       }
-
       await permission.destroy();
-
       return new ResponseDto({
         statusCode: 200,
         message: 'Perizinan berhasil dihapus beserta file terkait',
