@@ -1,8 +1,16 @@
-import { Column, DataType, Default, HasMany, Model, PrimaryKey, Table } from "sequelize-typescript";
+import {
+  Column,
+  DataType,
+  Default,
+  HasMany,
+  Model,
+  PrimaryKey,
+  Table,
+} from 'sequelize-typescript';
 import { Attendance } from './attendances.model';
 import { Permission } from './permissions.model';
 
-@Table({ tableName: "users", timestamps: true })
+@Table({ tableName: 'users', timestamps: true })
 export class User extends Model {
   @PrimaryKey
   @Default(DataType.UUIDV4)
@@ -15,7 +23,7 @@ export class User extends Model {
   @Column({ unique: true })
   username: string;
 
-  @Column({ unique: true})
+  @Column({ unique: true })
   email: string;
 
   @Column
@@ -31,9 +39,16 @@ export class User extends Model {
   @Column({ type: DataType.TEXT, allowNull: true })
   face_embedding: string | null;
 
-  @HasMany(() => Attendance, {onDelete: 'CASCADE'})
+  @Column({
+    type: DataType.STRING,
+    allowNull: true,
+    comment: 'URL to uploaded file (image/pdf)',
+  })
+  photo_url: string | null;
+
+  @HasMany(() => Attendance, { onDelete: 'CASCADE' })
   attendances: Attendance[];
 
-  @HasMany(() => Permission, {onDelete: 'CASCADE'})
+  @HasMany(() => Permission, { onDelete: 'CASCADE' })
   permissions: Permission[];
 }
