@@ -5,10 +5,18 @@ import {
   Get,
   Param,
   Patch,
+  UploadedFile,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
-import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBody,
+  ApiConsumes,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import {
   AdminUpdateDto,
   DeleteUserResponse,
@@ -25,12 +33,18 @@ import { JwtAuthGuard, RolesGuard } from 'src/common/guards';
 import { CurrentUser, Roles } from 'src/common/decorators';
 import { JwtPayload } from 'src/common/interfaces';
 import { Role } from 'src/common/enums';
+import { FileUploadInterceptor } from 'src/common/interceptor';
+import { getFullFileUrl } from 'src/common/utils';
+import { ConfigService } from '@nestjs/config';
 
 @ApiTags('User')
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('users')
 export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(
+    private readonly usersService: UsersService,
+    private readonly configService: ConfigService,
+  ) {}
 
   @ApiOperation({
     summary: 'Mendapatkan semua data user',
@@ -103,8 +117,41 @@ export class UsersController {
     return this.usersService.findUserBySmartIdentifier(identifier);
   }
 
+  @Delete('profile/photo')
+  @ApiOperation({ summary: 'Hapus foto profil saat ini' })
+  @ApiResponse({
+    status: 200,
+    description: 'Photo deleted successfully',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'User not found or no photo to delete',
+  })
+  async deletePhoto(@CurrentUser() user: JwtPayload) {
+    console.log('Deleting photo for user:', user.uuid);
+    return this.usersService.deleteProfilePhoto(user.uuid);
+  }
+
   @Patch('profile')
-  @ApiOperation({ summary: 'Update own profile' })
+  @ApiOperation({
+    summary: 'Update own profile',
+    description: 'Update your own user profile',
+  })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        name: { type: 'string' },
+        username: { type: 'string' },
+        email: { type: 'string', format: 'email' },
+        file: {
+          type: 'string',
+          format: 'binary',
+        },
+      },
+    },
+  })
   @ApiResponse({
     type: UpdateUserResponse,
     status: 200,
@@ -115,11 +162,18 @@ export class UsersController {
     status: 401,
     description: 'Unauthorized: User must be authenticated',
   })
-  updateOwnProfile(
+  @UseInterceptors(FileUploadInterceptor)
+  async updateOwnProfile(
     @CurrentUser() user: JwtPayload,
     @Body() dto: UserUpdateDto,
+    @UploadedFile() file?: Express.Multer.File,
   ) {
-    return this.usersService.updateProfile(user.uuid, dto);
+    let photoUrl: string | undefined;
+    if (file) {
+      const filePath = await this.usersService.uploadUserAvatar(file);
+      photoUrl = getFullFileUrl(filePath, this.configService);
+    }
+    return this.usersService.updateProfile(user.uuid, dto, photoUrl);
   }
 
   @Patch(':identifier')

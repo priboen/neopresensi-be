@@ -1,12 +1,24 @@
-import { Inject, Injectable, Res } from '@nestjs/common';
-import { ResponseDto } from 'src/common/dto';
+import { Inject, Injectable } from '@nestjs/common';
+import { ResponseDto, UserUpdateDto } from 'src/common/dto';
 import { User } from 'src/common/models';
+import * as fs from 'fs';
+import * as path from 'path';
 
 @Injectable()
 export class UsersService {
   constructor(
     @Inject('USER_REPOSITORY') private readonly userRepository: typeof User,
   ) {}
+
+  async uploadUserAvatar(file: Express.Multer.File): Promise<string> {
+    const destFolder = path.join(process.cwd(), 'uploads/user');
+    if (!fs.existsSync(destFolder)) {
+      fs.mkdirSync(destFolder, { recursive: true });
+    }
+    const newPath = path.join(destFolder, path.basename(file.path));
+    fs.renameSync(file.path, newPath);
+    return `uploads/user/${path.basename(file.path)}`;
+  }
 
   private removePassword(user: User) {
     const { password, ...userWithoutPassword } = user.toJSON();
@@ -93,10 +105,69 @@ export class UsersService {
     }
   }
 
+  async deleteProfilePhoto(uuid: string): Promise<ResponseDto<null>> {
+    try {
+      const user = await this.userRepository.findOne({
+        where: { uuid },
+        attributes: ['uuid', 'photo_url'],
+        raw: false,
+      });
+      console.log(
+        '🔍 Searching for user with UUID:',
+        user?.getDataValue('uuid'),
+      );
+
+      console.log('👤 User found:', user?.uuid);
+      console.log('🖼️ Current photo URL:', user?.photo_url);
+
+      if (!user?.get || !user.getDataValue('photo_url')) {
+        return new ResponseDto({
+          statusCode: 404,
+          message: 'User not found or no photo to delete',
+        });
+      }
+
+      try {
+        const parsedUrl = new URL(user.getDataValue('photo_url'));
+        const photoPath = path.resolve(
+          process.cwd(),
+          parsedUrl.pathname.replace(/^\/+/, ''),
+        );
+
+        console.log('🧹 File to delete:', photoPath);
+
+        if (fs.existsSync(photoPath) && fs.statSync(photoPath).isFile()) {
+          fs.unlinkSync(photoPath);
+          console.log(`✅ Deleted photo: ${photoPath}`);
+        }
+
+        await user.update({ photo_url: null });
+
+        return new ResponseDto({
+          statusCode: 200,
+          message: 'Photo deleted successfully',
+        });
+      } catch (err) {
+        console.error('❌ Failed deleting photo:', err.message);
+        return new ResponseDto({
+          statusCode: 500,
+          message: 'Failed to delete photo',
+        });
+      }
+    } catch (err) {
+      console.error('❌ Unexpected error:', err);
+      return new ResponseDto({
+        statusCode: 500,
+        message: 'Unexpected error occurred',
+      });
+    }
+  }
+
   async updateProfile(
     uuid: string,
-    updateData: Partial<User>,
-  ): Promise<ResponseDto<User>> {
+    updateData: Partial<UserUpdateDto>,
+    newPhotoUrl?: string,
+  ): Promise<ResponseDto<UserUpdateDto>> {
     try {
       const user = await this.userRepository.findOne({
         where: { uuid },
@@ -108,14 +179,51 @@ export class UsersService {
           message: 'User not found',
         });
       }
+      // if (newPhotoUrl) {
+      //   // Optional: hapus file lama jika berbeda
+      //   if (user.photo_url && user.photo_url !== newPhotoUrl) {
+      //     const oldPath = path.join(
+      //       process.cwd(),
+      //       user.photo_url.replace(/^.*uploads/, 'uploads'),
+      //     );
+      //     if (fs.existsSync(oldPath)) {
+      //       fs.unlinkSync(oldPath);
+      //     }
+      //   }
+      //   updateData.photo_url = newPhotoUrl;
+      // }
+
+      if (newPhotoUrl) {
+        const oldUrl = user.photo_url;
+
+        if (oldUrl && oldUrl !== newPhotoUrl) {
+          try {
+            const parsedUrl = new URL(oldUrl);
+            const oldFilePath = path.join(
+              process.cwd(),
+              parsedUrl.pathname.replace(/^\/+/, ''),
+            );
+
+            if (fs.existsSync(oldFilePath)) {
+              fs.unlinkSync(oldFilePath);
+              console.log(`🧹 Old photo deleted: ${oldFilePath}`);
+            }
+          } catch (err) {
+            console.error('❌ Failed to parse old photo URL:', err.message);
+          }
+        }
+
+        updateData.photo_url = newPhotoUrl;
+      }
+
       const updatedUser = await user.update(updateData);
-      return new ResponseDto<User>({
+      return new ResponseDto<UserUpdateDto>({
         statusCode: 200,
         message: 'User profile updated successfully',
-        data: this.removePassword(updatedUser) as User,
+        data: this.removePassword(updatedUser!),
       });
     } catch (error) {
-      return new ResponseDto<User>({
+      return new ResponseDto<UserUpdateDto>({
         statusCode: 500,
         message: 'An error occurred while updating the user profile',
       });
