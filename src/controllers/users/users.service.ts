@@ -112,50 +112,33 @@ export class UsersService {
         attributes: ['uuid', 'photo_url'],
         raw: false,
       });
-      console.log(
-        '🔍 Searching for user with UUID:',
-        user?.getDataValue('uuid'),
-      );
-
-      console.log('👤 User found:', user?.uuid);
-      console.log('🖼️ Current photo URL:', user?.photo_url);
-
       if (!user?.get || !user.getDataValue('photo_url')) {
         return new ResponseDto({
           statusCode: 404,
           message: 'User not found or no photo to delete',
         });
       }
-
       try {
         const parsedUrl = new URL(user.getDataValue('photo_url'));
         const photoPath = path.resolve(
           process.cwd(),
           parsedUrl.pathname.replace(/^\/+/, ''),
         );
-
-        console.log('🧹 File to delete:', photoPath);
-
         if (fs.existsSync(photoPath) && fs.statSync(photoPath).isFile()) {
           fs.unlinkSync(photoPath);
-          console.log(`✅ Deleted photo: ${photoPath}`);
         }
-
         await user.update({ photo_url: null });
-
         return new ResponseDto({
           statusCode: 200,
           message: 'Photo deleted successfully',
         });
       } catch (err) {
-        console.error('❌ Failed deleting photo:', err.message);
         return new ResponseDto({
           statusCode: 500,
           message: 'Failed to delete photo',
         });
       }
     } catch (err) {
-      console.error('❌ Unexpected error:', err);
       return new ResponseDto({
         statusCode: 500,
         message: 'Unexpected error occurred',
@@ -179,23 +162,8 @@ export class UsersService {
           message: 'User not found',
         });
       }
-      // if (newPhotoUrl) {
-      //   // Optional: hapus file lama jika berbeda
-      //   if (user.photo_url && user.photo_url !== newPhotoUrl) {
-      //     const oldPath = path.join(
-      //       process.cwd(),
-      //       user.photo_url.replace(/^.*uploads/, 'uploads'),
-      //     );
-      //     if (fs.existsSync(oldPath)) {
-      //       fs.unlinkSync(oldPath);
-      //     }
-      //   }
-      //   updateData.photo_url = newPhotoUrl;
-      // }
-
       if (newPhotoUrl) {
-        const oldUrl = user.photo_url;
-
+        const oldUrl = user.getDataValue('photo_url');
         if (oldUrl && oldUrl !== newPhotoUrl) {
           try {
             const parsedUrl = new URL(oldUrl);
@@ -203,19 +171,18 @@ export class UsersService {
               process.cwd(),
               parsedUrl.pathname.replace(/^\/+/, ''),
             );
-
             if (fs.existsSync(oldFilePath)) {
               fs.unlinkSync(oldFilePath);
-              console.log(`🧹 Old photo deleted: ${oldFilePath}`);
             }
           } catch (err) {
-            console.error('❌ Failed to parse old photo URL:', err.message);
+            throw new ResponseDto<UserUpdateDto>({
+              statusCode: 500,
+              message: 'Failed to delete old photo',
+            }); 
           }
         }
-
         updateData.photo_url = newPhotoUrl;
       }
-
       const updatedUser = await user.update(updateData);
       return new ResponseDto<UserUpdateDto>({
         statusCode: 200,
