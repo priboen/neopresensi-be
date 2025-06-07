@@ -21,15 +21,17 @@ export class AuthService {
     return userWithoutPassword;
   }
 
-  async login(loginData: LoginDTO): Promise<ResponseDto<{ token: string }>> {
+  async login(
+    loginData: LoginDTO,
+  ): Promise<ResponseDto<{ token: string; user: Partial<User> }>> {
     try {
       const user = await this.userRepository.findOne({
         where: { username: loginData.username },
       });
       if (!user) {
-        return new ResponseDto<{ token: string }>({
+        return new ResponseDto({
           statusCode: 401,
-          message: 'Username dan password salah',
+          message: 'Incorrect username or password',
         });
       }
       const userData = user.toJSON();
@@ -38,24 +40,27 @@ export class AuthService {
         userData.password,
       );
       if (!isPasswordValid) {
-        return new ResponseDto<{ token: string }>({
+        return new ResponseDto({
           statusCode: 401,
-          message: 'Username dan password salah',
+          message: 'Incorrect username or password',
         });
       }
       const token = await this.jwtService.signAsync({
         uuid: userData.uuid,
         role: userData.role,
       });
-      return new ResponseDto<{ token: string }>({
+      const userWithoutPassword = this.removePassword(user);
+      return new ResponseDto({
         statusCode: 200,
-        message: 'Login berhasil',
-        data: { token },
+        message: 'Login successful',
+        data: {
+          user: userWithoutPassword,
+          token,
+        },
       });
     } catch (error) {
       throw new InternalServerErrorException(
-        'Terjadi kesalahan saat login: ',
-        error.message,
+        'An error occurred during login: ' + error.message,
       );
     }
   }
@@ -72,23 +77,23 @@ export class AuthService {
         },
       });
       if (existingUser) {
-        return new ResponseDto<User>({
+        return new ResponseDto({
           statusCode: 409,
-          message: 'Username atau email sudah terdaftar',
+          message: 'Username or email already exists',
         });
       }
-      const user = await this.userRepository.create({
+      await this.userRepository.create({
         ...registerData,
         password: hashedPassword,
       });
-      const newUser = this.removePassword(user);
-      return new ResponseDto<User>({
+      return new ResponseDto({
         statusCode: 201,
-        message: 'Registrasi berhasil, silakan login',
-        data: newUser,
+        message: 'Registration successful, please login',
       });
     } catch (error) {
-      throw new InternalServerErrorException(error.message, error);
+      throw new InternalServerErrorException(
+        'An error occurred during registration: ' + error.message,
+      );
     }
   }
 }

@@ -2,24 +2,40 @@ import { ApiProperty } from '@nestjs/swagger';
 import { User } from 'src/common/models';
 
 export class AuthSuccessResponseDto {
-  @ApiProperty({ description: 'HTTP status code for successful login', example: 201 })
   @ApiProperty({ example: 200 })
   statusCode: number;
+
   @ApiProperty({ example: 'Login successful' })
   message: string;
+
   @ApiProperty({
     example: {
-      token: 'eyJhbGciOiJIUzI1NiIsInR...'
-    }
+      user: {
+        uuid: '3efa959b-e73a-499b-b537-d7e1af6e4bfd',
+        name: 'Muhamad Adri Muwaffaq Khamid',
+        username: 'priboen',
+        email: 'adri@mail.com',
+        role: 'guru',
+        face_embedding: null,
+        photo_url: 'http://www.neopresensi.com/uploads/user/file-xxx.jpeg',
+        createdAt: '2025-06-06T13:04:10.000Z',
+        updatedAt: '2025-06-06T14:30:07.000Z',
+      },
+      token: 'eyJhbGciOiJIUzI1NiIsInR...',
+    },
   })
-  data: string;
+  data: {
+    user: Partial<User>;
+    token: string;
+  };
 }
 
 export class AuthInvalidResponseDto {
-  @ApiProperty({ example: 400 })
+  @ApiProperty({ example: 401 })
   statusCode: number;
-  @ApiProperty({ example: 'Invalid username or password' })
-  message: string | object;
+
+  @ApiProperty({ example: 'Incorrect username or password' })
+  message: string;
 }
 
 export class NotFoundResponseDto {
@@ -34,24 +50,29 @@ export class RegisterSuccessResponseDto {
   @ApiProperty({ example: 201 })
   statusCode: number;
 
-  @ApiProperty({ example: 'Registered successfully, please login' })
+  @ApiProperty({ example: 'Registration successful, please login' })
   message: string;
-
-  @ApiProperty({
-    example: {
-      id: 1,
-      isAdmin: false,
-      name: 'John Doe',
-      username: 'johndoe',
-      email: 'john@mail.com',
-      createdAt: '2025-05-01T12:00:00Z',
-      updatedAt: '2025-05-01T12:00:00Z',
-    },
-  })
-  data: User;
 }
 
-export class ValidationErrorResponseDto {
+export class LoginValidationErrorResponseDto {
+  @ApiProperty({
+    example: [
+      'username must be a string',
+      'password should not be empty',
+      'password must be a string',
+    ],
+  })
+  message: string[];
+
+  @ApiProperty({ example: 'Bad Request' })
+  error: string;
+
+  @ApiProperty({ example: 400 })
+  statusCode: number;
+}
+
+
+export class RegisterValidationErrorResponseDto {
   @ApiProperty({
     example: [
       'Name should be at least 1 characters long',
@@ -79,6 +100,6 @@ export class DuplicateResponseDto {
   @ApiProperty({ example: 409 })
   statusCode: number;
 
-  @ApiProperty({ example: 'Username or Email already registered' })
+  @ApiProperty({ example: 'Username or Email already exists' })
   message: string | object;
 }

@@ -9,7 +9,8 @@ import {
   NotFoundResponseDto,
   RegisterDTO,
   RegisterSuccessResponseDto,
-  ValidationErrorResponseDto,
+  LoginValidationErrorResponseDto,
+  RegisterValidationErrorResponseDto,
 } from 'src/common/dto';
 
 @Controller('auth')
@@ -18,7 +19,7 @@ export class AuthController {
 
   @Post('/login')
   @ApiOperation({
-    summary: 'Login Pengguna',
+    summary: 'Login',
     description:
       'Endpoint untuk masuk ke dalam aplikasi menggunakan username dan password yang valid.',
   })
@@ -34,8 +35,13 @@ export class AuthController {
   })
   @ApiResponse({
     type: AuthInvalidResponseDto,
-    status: 400,
+    status: 401,
     description: 'Username atau password tidak valid.',
+  })
+  @ApiResponse({
+    type: LoginValidationErrorResponseDto,
+    status: 400,
+    description: 'Validasi data gagal. Periksa format dan keunikan data.',
   })
   async login(
     @Body() signInData: LoginDTO,
@@ -54,10 +60,10 @@ export class AuthController {
   @ApiResponse({
     type: RegisterSuccessResponseDto,
     status: 201,
-    description: 'Register berhasil. Data pengguna baru dikembalikan.',
+    description: 'Register berhasil.',
   })
   @ApiResponse({
-    type: ValidationErrorResponseDto,
+    type: RegisterValidationErrorResponseDto,
     status: 400,
     description: 'Validasi data gagal. Periksa format dan keunikan data.',
   })
