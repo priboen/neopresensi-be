@@ -48,18 +48,22 @@ export class UsersController {
 
   @ApiOperation({
     summary: 'Mendapatkan semua data user',
-    description:
-      'This endpoint is accessible only by users with the `admin` role.',
+    description: '🔐 Memerlukan role `admin`.',
   })
   @ApiResponse({
     type: GetAllUserResponse,
     status: 200,
-    description: 'List of users retrieved successfully',
+    description: 'Semua data user berhasil ditemukan',
   })
   @ApiResponse({
     type: UnauthorizedResponse,
     status: 401,
-    description: 'Unauthorized: User must be authenticated',
+    description: 'Unauthorized: Pengguna harus terautentikasi',
+  })
+  @ApiResponse({
+    type: ForbiddenResponse,
+    status: 403,
+    description: 'Forbidden: Hanya bisa diakses oleh role admin',
   })
   @Get()
   @Roles(Role.Admin)
@@ -68,23 +72,19 @@ export class UsersController {
   }
 
   @ApiOperation({
-    summary: 'Get user profile',
-    description: 'Retrieve the profile of the authenticated user',
+    summary: 'Data profil',
+    description:
+      '🔐 Memerlukan autentikasi. Mengambil data profil pengguna yang sedang login.',
   })
   @ApiResponse({
     type: GetUserProfileResponse,
     status: 200,
-    description: 'User profile retrieved successfully',
+    description: 'Data user berhasil ditemukan',
   })
   @ApiResponse({
     type: UnauthorizedResponse,
     status: 401,
-    description: 'Unauthorized: User must be authenticated',
-  })
-  @ApiResponse({
-    type: ForbiddenResponse,
-    status: 403,
-    description: 'Forbidden: Only accessible by admin role',
+    description: 'Unauthorized: Pengguna harus terautentikasi',
   })
   @Get('profile')
   getProfile(@CurrentUser() user: JwtPayload) {
@@ -92,24 +92,24 @@ export class UsersController {
   }
 
   @ApiOperation({
-    summary: 'Get user by identifier',
+    summary: 'Data user dengan identifikasi',
     description:
-      '🔐 Requires admin role. Retrieve user by UUID, username, or email.',
+      '🔐 Memerlukan role `admin`. Mengambil pengguna dengan UUID, nama pengguna, atau email.',
   })
   @ApiResponse({
     type: GetUserByIdResponse,
     status: 200,
-    description: 'User retrieved successfully',
+    description: 'Data user berhasil ditemukan',
   })
   @ApiResponse({
     type: UnauthorizedResponse,
     status: 401,
-    description: 'Unauthorized: User must be authenticated',
+    description: 'Unauthorized: User harus terautentikasi',
   })
   @ApiResponse({
     type: ForbiddenResponse,
     status: 403,
-    description: 'Forbidden: Only accessible by admin role',
+    description: 'Forbidden: Hanya bisa diakses oleh role admin',
   })
   @Get(':identifier')
   @Roles(Role.Admin)
@@ -121,11 +121,11 @@ export class UsersController {
   @ApiOperation({ summary: 'Hapus foto profil saat ini' })
   @ApiResponse({
     status: 200,
-    description: 'Photo deleted successfully',
+    description: 'Foto profil berhasil dihapus',
   })
   @ApiResponse({
     status: 404,
-    description: 'User not found or no photo to delete',
+    description: 'Foto profil tidak ditemukan',
   })
   async deletePhoto(@CurrentUser() user: JwtPayload) {
     console.log('Deleting photo for user:', user.uuid);
@@ -134,8 +134,9 @@ export class UsersController {
 
   @Patch('profile')
   @ApiOperation({
-    summary: 'Update own profile',
-    description: 'Update your own user profile',
+    summary: 'Mengubah profil pengguna sendiri',
+    description:
+      '🔐 Memerlukan autentikasi. Mengubah data profil pengguna yang sedang login.',
   })
   @ApiConsumes('multipart/form-data')
   @ApiBody({
@@ -179,23 +180,23 @@ export class UsersController {
   @Patch(':identifier')
   @Roles(Role.Admin)
   @ApiOperation({
-    summary: 'Update user by identifier',
-    description: '🔐 Requires admin role.',
+    summary: 'Memperbarui user dengan identifikasi',
+    description: '🔐 Memerlukan role `admin`.',
   })
   @ApiResponse({
     type: UpdateUserResponse,
     status: 200,
-    description: 'User updated successfully',
+    description: 'Data user berhasil diperbarui',
   })
   @ApiResponse({
     type: UnauthorizedResponse,
     status: 401,
-    description: 'Unauthorized: User must be authenticated',
+    description: 'Unauthorized: User harus terautentikasi',
   })
   @ApiResponse({
     type: ForbiddenResponse,
     status: 403,
-    description: 'Forbidden: Only accessible by admin role',
+    description: 'Forbidden: Hanya bisa diakses oleh role admin',
   })
   updateUserByIdentifier(
     @Param('identifier') identifier: string,
@@ -207,30 +208,30 @@ export class UsersController {
   @Delete(':identifier')
   @Roles(Role.Admin)
   @ApiOperation({
-    summary: 'Delete user',
+    summary: 'Hapus user dengan identifikasi',
     description:
-      '🔐 Requires admin role. You can delete user by UUID, Email or username',
+      '🔐 Memerlukan role `admin`. Bisa menghapus dengan UUID, Username atau Email',
   })
   @ApiResponse({
     type: DeleteUserResponse,
     status: 200,
-    description: 'User deleted successfully',
+    description: 'User berhasil dihapus',
   })
   @ApiResponse({
     type: UnauthorizedResponse,
     status: 401,
-    description: 'Unauthorized: User must be authenticated',
+    description: 'Unauthorized: User harus terautentikasi',
   })
   @ApiResponse({
     type: ForbiddenResponse,
     status: 403,
-    description: 'Forbidden: Admin only',
+    description: 'Forbidden: Hanya bisa diakses oleh role admin',
   })
   @ApiResponse({
     type: NotFoundResponse,
     status: 404,
     description:
-      'User not found: The user with the specified identifier does not exist.',
+      'User not found: Pengguna dengan identitas yang dimasukan tidak ditemukan.',
   })
   deleteUser(@Param('identifier') identifier: string) {
     return this.usersService.deleteProfile(identifier);

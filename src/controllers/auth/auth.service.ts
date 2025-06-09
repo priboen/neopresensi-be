@@ -1,5 +1,6 @@
 import * as bcrypt from 'bcrypt';
 import {
+  HttpException,
   Inject,
   Injectable,
   InternalServerErrorException,
@@ -77,10 +78,13 @@ export class AuthService {
         },
       });
       if (existingUser) {
-        return new ResponseDto({
-          statusCode: 409,
-          message: 'Username or email already exists',
-        });
+        throw new HttpException(
+          new ResponseDto({
+            statusCode: 409,
+            message: 'Username or email already exists',
+          }),
+          409,
+        );
       }
       await this.userRepository.create({
         ...registerData,
@@ -91,8 +95,15 @@ export class AuthService {
         message: 'Registration successful, please login',
       });
     } catch (error) {
-      throw new InternalServerErrorException(
-        'An error occurred during registration: ' + error.message,
+      if (error instanceof HttpException) {
+        throw error;
+      }
+      throw new HttpException(
+        new ResponseDto({
+          statusCode: 500,
+          message: 'An error occurred during registration: ' + error.message,
+        }),
+        500,
       );
     }
   }
