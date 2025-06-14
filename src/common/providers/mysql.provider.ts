@@ -1,13 +1,39 @@
-import { Sequelize } from "sequelize-typescript";
-import { mysqlConfig } from "../configs";
-import { Attendance, Permission, User } from "../models";
-import { ConfigService } from "@nestjs/config";
+import { Sequelize } from 'sequelize-typescript';
+import { mysqlConfig } from '../configs';
+import {
+  Attendance,
+  CCTVConfig,
+  CCTVSchedule,
+  Classes,
+  ClassGroup,
+  Meeting,
+  MeetingAttendance,
+  Permission,
+  Schedule,
+  Subject,
+  TeacherAssignment,
+  User,
+} from '../models';
+import { ConfigService } from '@nestjs/config';
 
 export const mysqlProvider = {
   provide: 'SEQUELIZE',
   useFactory: async (configService: ConfigService) => {
     const sequelize = new Sequelize(mysqlConfig(configService));
-    sequelize.addModels([User, Attendance, Permission]);
+    sequelize.addModels([
+      User,
+      Attendance,
+      Permission,
+      TeacherAssignment,
+      ClassGroup,
+      Classes,
+      Subject,
+      Schedule,
+      CCTVConfig,
+      CCTVSchedule,
+      MeetingAttendance,
+      Meeting,
+    ]);
     try {
       await sequelize.authenticate();
       console.log('Database connection established successfully.');
