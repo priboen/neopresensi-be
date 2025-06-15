@@ -27,7 +27,7 @@ export class FaceEmbeddingController {
   constructor(private readonly faceEmbeddingService: FaceEmbeddingService) {}
 
   @Patch()
-  @Roles(Role.Guru)
+  @Roles(Role.Teacher)
   @ApiOperation({
     summary: 'Update own face embedding',
     description:
@@ -55,7 +55,7 @@ export class FaceEmbeddingController {
   }
 
   @Get()
-  @Roles(Role.Guru)
+  @Roles(Role.Teacher)
   @ApiOperation({
     summary: 'Retrieve own face embedding',
     description:
