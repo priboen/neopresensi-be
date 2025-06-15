@@ -52,7 +52,7 @@ export class PermissionsController {
     private readonly permissionsService: PermissionsService,
   ) {}
   @Post()
-  @Roles(Role.Guru)
+  @Roles(Role.Teacher)
   @ApiOperation({
     summary: 'Buat pengajuan izin (Guru)',
     description:
@@ -216,7 +216,7 @@ export class PermissionsController {
   }
 
   @Delete(':uuid')
-  @Roles(Role.Guru)
+  @Roles(Role.Teacher)
   @ApiOperation({
     summary: 'Hapus pengajuan izin (Guru)',
     description:

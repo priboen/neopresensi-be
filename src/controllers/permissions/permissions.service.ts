@@ -9,7 +9,8 @@ import * as path from 'path';
 @Injectable()
 export class PermissionsService {
   constructor(
-    @Inject('PERMISSION_REPOSITORY') private readonly permissionRepository: any,
+    @Inject('PERMISSION_REPOSITORY')
+    private readonly permissionRepository: typeof Permission,
   ) {}
 
   async uploadFileToPermissions(file: Express.Multer.File): Promise<string> {
@@ -115,6 +116,12 @@ export class PermissionsService {
       }
       const permissions = await this.permissionRepository.findAll({
         where,
+        include: [
+          {
+            association: 'user',
+            attributes: ['uuid', 'name', 'photo_url'],
+          },
+        ],
         order: [['createdAt', 'DESC']],
       });
       return new ResponseDto<Permission[]>({
@@ -184,10 +191,10 @@ export class PermissionsService {
           'updatedAt',
         ],
       });
-      return new ResponseDto({
+      return new ResponseDto<Permission>({
         statusCode: 200,
         message: 'Status perizinan berhasil diubah',
-        data: updatedPermission,
+        data: updatedPermission as Permission,
       });
     } catch (error) {
       return new ResponseDto<Permission>({
