@@ -19,6 +19,6 @@ export class ClassGroup extends Model {
   @Column({ allowNull: false, unique: true })
   name: string;
 
-  @HasMany(() => Classes, { onDelete: 'SET NULL' })
+  @HasMany(() => Classes, { foreignKey: 'group_id', onDelete: 'SET NULL' })
   classes: Classes[];
 }

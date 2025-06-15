@@ -6,6 +6,7 @@ import {
   ClassGroup,
   Meeting,
   MeetingAttendance,
+  MeetingInvitation,
   Permission,
   Schedule,
   Subject,
@@ -73,6 +74,11 @@ export const permissionProvider = {
   useValue: Permission,
 };
 
+export const meetingInvitationProvider = {
+  provide: 'MEETING_INVITATION_REPOSITORY',
+  useValue: MeetingInvitation,
+};
+
 export const modelProviders = [
   userProvider,
   classGroupProvider,
@@ -86,4 +92,5 @@ export const modelProviders = [
   meetingProvider,
   meetingAttendanceProvider,
   permissionProvider,
+  meetingInvitationProvider,
 ];

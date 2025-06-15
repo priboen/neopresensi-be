@@ -1,11 +1,14 @@
 import {
+  BelongsTo,
   Column,
   DataType,
   Default,
+  HasMany,
   Model,
   PrimaryKey,
   Table,
 } from 'sequelize-typescript';
+import { MeetingInvitation } from './meeting-invitations.model';
 
 @Table({ tableName: 'meetings', timestamps: true })
 export class Meeting extends Model {
@@ -29,6 +32,9 @@ export class Meeting extends Model {
   @Column({ type: DataType.TIME, allowNull: false })
   end_time: string;
 
-  @Column({ type: DataType.STRING(255), allowNull: true })
-  qr_token: string;
+  @HasMany(() => MeetingInvitation, {
+    foreignKey: 'meeting_id',
+    onDelete: 'CASCADE',
+  })
+  meetingInvitations: MeetingInvitation[];
 }

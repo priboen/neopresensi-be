@@ -10,7 +10,6 @@ import {
 } from 'sequelize-typescript';
 import { User } from './user.model';
 import { CCTVSchedule } from './cctv-schedules.model';
-import { CCTVConfig } from './cctv-configs.model';
 
 @Table({ tableName: 'attendances', timestamps: true })
 export class Attendance extends Model {
@@ -27,22 +26,18 @@ export class Attendance extends Model {
   @Column({ type: DataType.UUID, allowNull: false })
   user_id: string;
 
-  @Column({ allowNull: false })
-  attendance_time: Date;
+  @Column({ type: DataType.TIME, allowNull: false })
+  check_in: string;
+
+  @Column({ type: DataType.TIME, allowNull: true })
+  check_out: string | null;
 
   @Column({ allowNull: false })
   status: string;
 
-  @ForeignKey(() => CCTVConfig)
-  @Column({ type: DataType.UUID })
-  cctv_id: string;
-
-  @BelongsTo(() => CCTVSchedule)
+  @BelongsTo(() => CCTVSchedule, { foreignKey: 'cctv_schedule_id' })
   cctvSchedule: CCTVSchedule;
 
-  @BelongsTo(() => User)
+  @BelongsTo(() => User, { foreignKey: 'user_id' })
   user: User;
-
-  @BelongsTo(() => CCTVConfig)
-  cctvConfig: CCTVConfig;
 }

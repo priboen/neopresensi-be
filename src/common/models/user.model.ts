@@ -6,11 +6,13 @@ import {
   Table,
   HasMany,
   Model,
+  BelongsTo,
 } from 'sequelize-typescript';
 import { Attendance } from './attendances.model';
 import { TeacherAssignment } from './teacher-assignments.model';
 import { MeetingAttendance } from './meeting-attendances.model';
 import { Permission } from './permissions.model';
+import { MeetingInvitation } from './meeting-invitations.model';
 
 @Table({ tableName: 'users', timestamps: true })
 export class User extends Model {
@@ -44,15 +46,21 @@ export class User extends Model {
   @Column({ type: DataType.STRING, allowNull: true })
   photo_url: string | null;
 
-  @HasMany(() => Attendance, { onDelete: 'CASCADE' })
+  @HasMany(() => Attendance, { foreignKey: 'user_id', onDelete: 'CASCADE' })
   attendances: Attendance[];
 
-  @HasMany(() => TeacherAssignment, { onDelete: 'CASCADE' })
+  @HasMany(() => TeacherAssignment, {
+    foreignKey: 'user_id',
+    onDelete: 'CASCADE',
+  })
   teacherAssignments: TeacherAssignment[];
 
-  @HasMany(() => MeetingAttendance, { onDelete: 'CASCADE' })
-  meetingAttendances: MeetingAttendance[];
+  @HasMany(() => MeetingInvitation, {
+    foreignKey: 'user_id',
+    onDelete: 'CASCADE',
+  })
+  meetingInvitations: MeetingInvitation[];
 
-  @HasMany(() => Permission, { onDelete: 'CASCADE' })
+  @HasMany(() => Permission, { foreignKey: 'user_id', onDelete: 'CASCADE' })
   permissions: Permission[];
 }

@@ -54,6 +54,6 @@ export class Permission extends Model {
   })
   file_url: string | null;
 
-  @BelongsTo(() => User)
+  @BelongsTo(() => User, { foreignKey: 'user_id' })
   user: User;
 }

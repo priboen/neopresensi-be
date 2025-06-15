@@ -26,9 +26,12 @@ export class Classes extends Model {
   @Column({ type: DataType.UUID })
   group_id: string;
 
-  @BelongsTo(() => ClassGroup, { onDelete: 'SET NULL' })
+  @BelongsTo(() => ClassGroup, { foreignKey: 'group_id', onDelete: 'SET NULL' })
   group: ClassGroup;
 
-  @HasMany(() => TeacherAssignment, { onDelete: 'CASCADE' })
+  @HasMany(() => TeacherAssignment, {
+    foreignKey: 'class_id',
+    onDelete: 'CASCADE',
+  })
   teacherAssignments: TeacherAssignment[];
 }

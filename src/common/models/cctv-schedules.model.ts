@@ -6,8 +6,11 @@ import {
   ForeignKey,
   Model,
   Default,
+  BelongsTo,
+  HasMany,
 } from 'sequelize-typescript';
 import { CCTVConfig } from './cctv-configs.model';
+import { Attendance } from './attendances.model';
 
 @Table({ tableName: 'cctv_schedule', timestamps: true })
 export class CCTVSchedule extends Model {
@@ -28,4 +31,13 @@ export class CCTVSchedule extends Model {
 
   @Column({ type: DataType.TIME, allowNull: false })
   check_out_time: string;
+
+  @BelongsTo(() => CCTVConfig, { foreignKey: 'cctv_id' })
+  cctvConfig: CCTVConfig;
+
+  @HasMany(() => Attendance, {
+    foreignKey: 'cctv_schedule_id',
+    onDelete: 'CASCADE',
+  })
+  attendances: Attendance[];
 }

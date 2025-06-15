@@ -7,10 +7,12 @@ import {
   Model,
   Default,
   BelongsTo,
+  HasMany,
 } from 'sequelize-typescript';
 import { Classes } from './classes.model';
 import { Subject } from './subjects.model';
 import { User } from './user.model';
+import { Schedule } from './schedules.model';
 
 @Table({ tableName: 'teacher_assignments', timestamps: true })
 export class TeacherAssignment extends Model {
@@ -31,12 +33,15 @@ export class TeacherAssignment extends Model {
   @Column({ type: DataType.UUID })
   subject_id: string;
 
-  @BelongsTo(() => User)
+  @BelongsTo(() => User, { foreignKey: 'user_id' })
   user: User;
 
-  @BelongsTo(() => Classes)
+  @BelongsTo(() => Classes, { foreignKey: 'class_id' })
   classes: Classes;
 
-  @BelongsTo(() => Subject)
+  @BelongsTo(() => Subject, { foreignKey: 'subject_id' })
   subject: Subject;
+
+  @HasMany(() => Schedule, { foreignKey: 'teacher_id', onDelete: 'CASCADE' })
+  schedules: Schedule[];
 }
