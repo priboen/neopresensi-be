@@ -10,3 +10,4 @@ export * from './meeting-attendances.model';
 export * from './meetings.model';
 export * from './schedules.model';
 export * from './teacher-assignments.model';
+export * from './meeting-invitations.model';
