@@ -177,7 +177,7 @@ export class UsersController {
     return this.usersService.updateProfile(user.uuid, dto, photoUrl);
   }
 
-  @Patch(':identifier')
+  @Patch(':uuid')
   @Roles(Role.Admin)
   @ApiOperation({
     summary: 'Memperbarui user dengan identifikasi',
@@ -198,14 +198,14 @@ export class UsersController {
     status: 403,
     description: 'Forbidden: Hanya bisa diakses oleh role admin',
   })
-  updateUserByIdentifier(
-    @Param('identifier') identifier: string,
+  updateUserByUuid(
+    @Param('uuid') uuid: string,
     @Body() dto: AdminUpdateDto,
   ) {
-    return this.usersService.updateUserByIdentifier(identifier, dto);
+    return this.usersService.updateUserByUuid(uuid, dto);
   }
 
-  @Delete(':identifier')
+  @Delete(':uuid')
   @Roles(Role.Admin)
   @ApiOperation({
     summary: 'Hapus user dengan identifikasi',
@@ -233,7 +233,7 @@ export class UsersController {
     description:
       'User not found: Pengguna dengan identitas yang dimasukan tidak ditemukan.',
   })
-  deleteUser(@Param('identifier') identifier: string) {
-    return this.usersService.deleteProfile(identifier);
+  deleteUser(@Param('uuid') uuid: string) {
+    return this.usersService.deleteProfile(uuid);
   }
 }

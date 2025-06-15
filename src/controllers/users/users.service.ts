@@ -3,6 +3,7 @@ import { ResponseDto, UserUpdateDto } from 'src/common/dto';
 import { User } from 'src/common/models';
 import * as fs from 'fs';
 import * as path from 'path';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class UsersService {
@@ -25,18 +26,19 @@ export class UsersService {
     return userWithoutPassword;
   }
 
-  async getAllUsers(): Promise<ResponseDto<User[]>> {
+  async getAllUsers(): Promise<ResponseDto<Partial<User>[]>> {
     try {
       const users = await this.userRepository.findAll({
-        attributes: { exclude: ['password'] },
+        attributes: ['uuid', 'name', 'username', 'email', 'role', 'photo_url'],
       });
-      return new ResponseDto<User[]>({
+
+      return new ResponseDto<Partial<User>[]>({
         statusCode: 200,
         message: 'Users retrieved successfully',
-        data: users.map((user) => this.removePassword(user) as User),
+        data: users,
       });
     } catch (error) {
-      return new ResponseDto<User[]>({
+      return new ResponseDto<Partial<User>[]>({
         statusCode: 500,
         message: 'An error occurred while retrieving users',
       });
@@ -178,7 +180,7 @@ export class UsersService {
             throw new ResponseDto<UserUpdateDto>({
               statusCode: 500,
               message: 'Failed to delete old photo',
-            }); 
+            });
           }
         }
         updateData.photo_url = newPhotoUrl;
@@ -197,30 +199,31 @@ export class UsersService {
     }
   }
 
-  async updateUserByIdentifier(
-    identifier: string,
+  async updateUserByUuid(
+    uuid: string,
     updateData: Partial<User>,
   ): Promise<ResponseDto<User>> {
     try {
-      const isUuid = /^[0-9a-f-]{36}$/.test(identifier);
-      const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(identifier);
-      const whereClause = isUuid
-        ? { uuid: identifier }
-        : isEmail
-          ? { email: identifier }
-          : { username: identifier };
-      const user = await this.userRepository.findOne({ where: whereClause });
+      const user = await this.userRepository.findOne({ where: { uuid } });
+
       if (!user) {
         return new ResponseDto<User>({
           statusCode: 404,
           message: 'User not found',
         });
       }
-      const updated = await user.update(updateData);
+
+      if (updateData.password) {
+        updateData.password = await bcrypt.hash(updateData.password, 10);
+      }
+
+      const updatedUser = await user.update(updateData);
+      const { password, ...sanitizedUser } = updatedUser.toJSON();
+
       return new ResponseDto<User>({
         statusCode: 200,
         message: 'User updated successfully',
-        data: this.removePassword(updated) as User,
+        data: sanitizedUser as User,
       });
     } catch (error) {
       return new ResponseDto<User>({
@@ -230,36 +233,56 @@ export class UsersService {
     }
   }
 
-  async deleteProfile(identifier: string): Promise<ResponseDto<void>> {
+  async deleteProfile(uuid: string): Promise<ResponseDto<User>> {
     try {
-      const isUuid =
-        /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
-          identifier,
-        );
-      const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(identifier);
-      const whereClause = isUuid
-        ? { uuid: identifier }
-        : isEmail
-          ? { email: identifier }
-          : { username: identifier };
       const user = await this.userRepository.findOne({
-        where: whereClause,
+        where: { uuid },
+        include: ['permissions'],
       });
       if (!user) {
-        return new ResponseDto<void>({
+        return new ResponseDto<User>({
           statusCode: 404,
           message: 'User not found',
         });
       }
+      const photoUrl = user.getDataValue('photo_url');
+      if (photoUrl) {
+        const parsedPhotoUrl = new URL(photoUrl);
+        const photoPath = path.join(
+          process.cwd(),
+          parsedPhotoUrl.pathname.replace(/^\/+/, ''),
+        );
+        if (fs.existsSync(photoPath) && fs.statSync(photoPath).isFile()) {
+          fs.unlinkSync(photoPath);
+          console.log(`🧹 Deleted user photo: ${photoPath}`);
+        }
+      }
+      const permissions = user.getDataValue('permissions') || [];
+      for (const perm of permissions) {
+        const fileUrl = perm.getDataValue('file_url');
+        if (fileUrl) {
+          const parsedFileUrl = new URL(fileUrl);
+          const filePath = path.join(
+            process.cwd(),
+            parsedFileUrl.pathname.replace(/^\/+/, ''),
+          );
+          if (fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
+            fs.unlinkSync(filePath);
+            console.log(`🧹 Deleted permission file: ${filePath}`);
+          }
+        }
+      }
       await user.destroy();
-      return new ResponseDto<void>({
+      return new ResponseDto<User>({
         statusCode: 200,
-        message: 'User profile deleted successfully',
+        message: 'User and related files successfully deleted',
       });
     } catch (error) {
-      return new ResponseDto<void>({
+      console.error('❌ Error in deleteProfile:', error);
+      return new ResponseDto<User>({
         statusCode: 500,
-        message: 'An error occurred while deleting the user profile',
+        message:
+          'An error occurred while deleting the user profile: ' + error.message,
       });
     }
   }
