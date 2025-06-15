@@ -8,25 +8,27 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ClassGroupService } from './class-group.service';
-import { ApiCreatedResponse, ApiHeader, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { JwtAuthGuard, RolesGuard } from 'src/common/guards';
 import { Roles } from 'src/common/decorators';
 import { Role } from 'src/common/enums';
 import {
-  CreateGroupDto,
-  ForbiddenResponse,
-  UnauthorizedResponse,
-} from 'src/common/dto';
-import {
   ClassGroupAlreadyExistsResponse,
   ClassGroupNotFoundResponse,
   CreateClassGroupResponse,
+  CreateGroupDto,
   DeleteClassGroupResponse,
+  ForbiddenResponse,
   GetAllClassGroupsResponse,
+  InternalServerErrorResponse,
+  UnauthorizedResponse,
   ValidationErrorResponse,
-} from 'src/common/dto/responses/class-group';
-
-@ApiTags('Group Classes')
+} from 'src/common/dto';
+@ApiTags('Class Group')
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles(Role.Admin)
 @Controller('class-group')
@@ -54,10 +56,10 @@ export class ClassGroupController {
     status: 403,
     description: 'Forbidden access',
   })
-  @ApiHeader({
-    name: 'Authorization',
-    description: 'JWT token for authentication',
-    required: true,
+  @ApiResponse({
+    status: 500,
+    description: 'Internal server error',
+    type: InternalServerErrorResponse,
   })
   async getAllClassGroups() {
     return this.classGroupService.findAll();
@@ -68,11 +70,6 @@ export class ClassGroupController {
     summary: 'Create Class Group',
     description:
       'Create a new class group with the provided details. This endpoint is accessible only to users with the Admin role.',
-  })
-  @ApiHeader({
-    name: 'Authorization',
-    description: 'JWT token for authentication',
-    required: true,
   })
   @ApiResponse({
     status: 201,
@@ -112,11 +109,6 @@ export class ClassGroupController {
   }
 
   @Delete(':uuid')
-  @ApiHeader({
-    name: 'Authorization',
-    description: 'JWT token for authentication',
-    required: true,
-  })
   @ApiOperation({
     summary: 'Delete Class Group',
     description:
@@ -131,6 +123,21 @@ export class ClassGroupController {
     status: 404,
     description: 'Class group not found',
     type: ClassGroupNotFoundResponse,
+  })
+  @ApiResponse({
+    status: 401,
+    type: UnauthorizedResponse,
+    description: 'Unauthorized access',
+  })
+  @ApiResponse({
+    type: ForbiddenResponse,
+    status: 403,
+    description: 'Forbidden access',
+  })
+  @ApiResponse({
+    status: 500,
+    description: 'Internal server error',
+    type: InternalServerErrorResponse,
   })
   async deleteClassGroup(@Param('uuid') uuid: string) {
     return this.classGroupService.delete(uuid);
