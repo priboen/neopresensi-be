@@ -13,11 +13,10 @@ import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard, RolesGuard } from 'src/common/guards';
 import { Roles } from 'src/common/decorators';
 import { Role } from 'src/common/enums';
-import { CreateCctvConfigsDto } from 'src/common/dto/data/create-cctv-configs.dto';
-import { UpdateCctvConfigDto } from 'src/common/dto/data/update-cctv-config.dto';
 import {
   ConfigNotFoundResponseDto,
   ConfigValidationErrorResponseDto,
+  CreateCctvConfigsDto,
   CreateConfigResponseDto,
   DeleteConfigResponseDto,
   ForbiddenResponse,
@@ -26,6 +25,7 @@ import {
   UnauthorizedResponse,
   UpdateConfigResponseDto,
 } from 'src/common/dto';
+import { UpdateCctvConfigDto } from 'src/common/dto/data/update-cctv-config.dto';
 
 @ApiTags('CCTV Configurations')
 @UseGuards(JwtAuthGuard, RolesGuard)
