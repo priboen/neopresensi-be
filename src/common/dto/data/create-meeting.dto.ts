@@ -1,11 +1,10 @@
-import { ApiProperty } from "@nestjs/swagger";
-import { IsDate, IsNotEmpty, IsString } from "class-validator";
-import { Is } from "sequelize-typescript";
+import { ApiProperty } from '@nestjs/swagger';
+import { IsDateString, IsNotEmpty, IsString } from 'class-validator';
 
 export class CreateMeetingDto {
   @ApiProperty({
-    example: "Team Sync",
-    description: "The title of the meeting",
+    example: 'Team Sync',
+    description: 'The title of the meeting',
     required: true,
   })
   @IsString()
@@ -13,8 +12,8 @@ export class CreateMeetingDto {
   title: string;
 
   @ApiProperty({
-    example: "Discuss project updates and next steps",
-    description: "A brief description of the meeting",
+    example: 'Discuss project updates and next steps',
+    description: 'A brief description of the meeting',
     required: true,
   })
   @IsString()
@@ -22,17 +21,17 @@ export class CreateMeetingDto {
   description: string;
 
   @ApiProperty({
-    example: "2023-10-01",
-    description: "The date of the meeting",
+    example: '2023-10-01',
+    description: 'The date of the meeting',
     required: true,
   })
   @IsNotEmpty()
-  @IsDate()
+  @IsDateString()
   date: Date;
 
   @ApiProperty({
-    example: "10:00",
-    description: "The start time of the meeting in HH:mm format",
+    example: '10:00',
+    description: 'The start time of the meeting in HH:mm format',
     required: true,
   })
   @IsString()
@@ -40,8 +39,8 @@ export class CreateMeetingDto {
   start_time: string;
 
   @ApiProperty({
-    example: "11:00",
-    description: "The end time of the meeting in HH:mm format",
+    example: '11:00',
+    description: 'The end time of the meeting in HH:mm format',
     required: true,
   })
   @IsString()
