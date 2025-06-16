@@ -1,6 +1,15 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { CreateMeetingDto, ResponseDto, UpdateMeetingDto } from 'src/common/dto';
-import { Meeting, MeetingAttendance, MeetingInvitation } from 'src/common/models';
+import {
+  CreateMeetingDto,
+  ResponseDto,
+  UpdateMeetingDto,
+} from 'src/common/dto';
+import {
+  Meeting,
+  MeetingAttendance,
+  MeetingInvitation,
+} from 'src/common/models';
+import * as dayjs from 'dayjs';
 
 @Injectable()
 export class MeetingsService {
@@ -10,61 +19,68 @@ export class MeetingsService {
   ) {}
 
   async findAll(): Promise<ResponseDto<any[]>> {
-    try {
-      const meetings = await this.meetingRepository.findAll({
-        order: [
-          ['date', 'ASC'],
-          ['start_time', 'ASC'],
-        ],
-        include: [
-          {
-            model: MeetingInvitation,
-            include: [
-              {
-                model: MeetingAttendance,
-              },
-            ],
-          },
-        ],
-      });
+  try {
+    const meetings = await this.meetingRepository.findAll({
+      order: [
+        ['date', 'ASC'],
+        ['start_time', 'ASC'],
+      ],
+      include: [
+        {
+          model: MeetingInvitation,
+          include: [MeetingAttendance],
+        },
+      ],
+    });
+    const result = meetings.map((meeting) => {
+      const {
+        uuid,
+        title,
+        description,
+        date,
+        start_time,
+        end_time,
+        meetingInvitations = [],
+      } = meeting.get({ plain: true });
+      const totalInvited = meetingInvitations.length;
+      const totalPresent = meetingInvitations.filter(
+        (inv) => inv.meetingAttendances && inv.meetingAttendances.length > 0,
+      ).length;
+      const endTime = dayjs(`${date}T${end_time}`);
+      const now = dayjs();
+      const totalAbsent = endTime.isBefore(now)
+        ? meetingInvitations.filter(
+            (inv) => !inv.meetingAttendances || inv.meetingAttendances.length === 0,
+          ).length
+        : 0;
 
-      const result = meetings.map((meeting) => {
-        const invitations = meeting.meetingInvitations || [];
-        const totalInvited = invitations.length;
-        let totalPresent = 0;
+      return {
+        uuid,
+        title,
+        description,
+        date,
+        start_time,
+        end_time,
+        total_invited: totalInvited,
+        total_present: totalPresent,
+        total_absent: totalAbsent,
+      };
+    });
 
-        invitations.forEach((inv) => {
-          if (inv.meetingAttendances && inv.meetingAttendances.length > 0) {
-            totalPresent++;
-          }
-        });
-
-        return {
-          uuid: meeting.getDataValue('uuid'),
-          title: meeting.getDataValue('title'),
-          description: meeting.getDataValue('description'),
-          date: meeting.getDataValue('date'),
-          start_time: meeting.getDataValue('start_time'),
-          end_time: meeting.getDataValue('end_time'),
-          total_invited: totalInvited,
-          total_present: totalPresent,
-          total_absent: totalInvited - totalPresent,
-        };
-      });
-
-      return new ResponseDto({
-        statusCode: 200,
-        message: 'Meetings retrieved successfully',
-        data: result,
-      });
-    } catch (error) {
-      return new ResponseDto({
-        statusCode: 500,
-        message: 'Internal server error',
-        data: error.message,
-      });
-    }
+    return new ResponseDto({
+      statusCode: 200,
+      message: 'Meetings retrieved successfully',
+      data: result,
+    });
+  } catch (error) {
+    console.error('Meeting error:', error);
+    return new ResponseDto({
+      statusCode: 500,
+      message: 'Internal server error',
+      data: error.message,
+    });
   }
+}
 
   async create(data: CreateMeetingDto): Promise<ResponseDto<Meeting>> {
     try {
@@ -108,7 +124,10 @@ export class MeetingsService {
     }
   }
 
-  async update(uuid: string, data: UpdateMeetingDto): Promise<ResponseDto<Meeting>> {
+  async update(
+    uuid: string,
+    data: UpdateMeetingDto,
+  ): Promise<ResponseDto<Meeting>> {
     try {
       const meeting = await this.meetingRepository.findOne({
         where: { uuid },
