@@ -9,3 +9,4 @@ export * from './classes';
 export * from './cctv-config';
 export * from './cctv-schedule';
 export * from './meeting';
+export * from './subject';
