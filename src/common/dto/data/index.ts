@@ -6,3 +6,5 @@ export * from './create-permission.dto';
 export * from './update-permission.dto';
 export * from './update-face-embedding.dto';
 export * from './create-class-group.dto';
+export * from './create-cctv-configs.dto';
+export * from './create-cctv-schedule.dto';
