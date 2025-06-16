@@ -6,3 +6,4 @@ export * from './error-response.dto';
 export * from './permission';
 export * from './class-group';
 export * from './classes';
+export * from './cctv-config';
