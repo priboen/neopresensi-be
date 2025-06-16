@@ -7,3 +7,5 @@ export * from './permission';
 export * from './class-group';
 export * from './classes';
 export * from './cctv-config';
+export * from './cctv-schedule';
+export * from './meeting';
