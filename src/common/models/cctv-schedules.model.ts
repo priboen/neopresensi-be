@@ -23,7 +23,7 @@ export class CCTVSchedule extends Model {
   @Column({ type: DataType.UUID })
   cctv_id: string;
 
-  @Column({ allowNull: false })
+  @Column({ allowNull: false, unique: true })
   day: string;
 
   @Column({ type: DataType.TIME, allowNull: false })
