@@ -12,7 +12,6 @@ import {
 import { CctvSchedulesService } from './cctv-schedules.service';
 import {
   ApiOperation,
-  ApiProperty,
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
