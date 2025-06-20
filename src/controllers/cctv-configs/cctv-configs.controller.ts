@@ -64,6 +64,26 @@ export class CctvConfigsController {
     return this.cctvConfigsService.findAll();
   }
 
+  @Get(':uuid')
+  @ApiOperation({
+    summary: 'Get CCTV Configuration by UUID',
+    description:
+      'Fetch a specific CCTV configuration by its UUID. Accessible only to users with the Admin role.',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'CCTV configuration fetched successfully',
+    type: CreateConfigResponseDto,
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'CCTV configuration not found',
+    type: ConfigNotFoundResponseDto,
+  })
+  async getCctvByUuid(@Param('uuid') uuid: string) {
+    return this.cctvConfigsService.findByUuid(uuid);
+  }
+
   @Post()
   @ApiOperation({
     summary: 'Create CCTV Configuration',

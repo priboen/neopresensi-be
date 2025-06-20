@@ -11,3 +11,4 @@ export * from './cctv-schedule';
 export * from './meeting';
 export * from './subject';
 export * from './teacher-assignment';
+export * from './schedule';

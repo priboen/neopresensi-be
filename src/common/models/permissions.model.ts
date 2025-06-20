@@ -20,7 +20,7 @@ export class Permission extends Model {
 
   @ForeignKey(() => User)
   @Column({ type: DataType.UUID, allowNull: false })
-  user_uuid: string;
+  user_id: string;
 
   @Column({
     type: DataType.DATEONLY,

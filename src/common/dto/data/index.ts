@@ -15,3 +15,5 @@ export * from './create-meeting-invitation.dto';
 export * from './create-subject.dto';
 export * from './create-teacher-assignment.dto';
 export * from './update-teacher-assignment.dto';
+export * from './create-schedule.dto';
+export * from './update-schedule.dto';

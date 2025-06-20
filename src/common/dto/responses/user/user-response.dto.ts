@@ -4,29 +4,27 @@ import { User } from 'src/common/models';
 export class GetAllUserResponse {
   @ApiProperty({ example: 200 })
   statusCode: number;
+
   @ApiProperty({ example: 'Users retrieved successfully' })
   message: string;
+
   @ApiProperty({
     example: [
       {
         uuid: '6b84a91f-ab0c-48b7-b82a-5d5e9156f340',
-        name: 'Muhamad Adri Muwaffaq Khamid',
-        username: 'priboen',
-        email: 'adri@mail.com',
-        role: 'guru',
-        face_embedding: null,
-        createdAt: '2025-05-26T13:16:42.000Z',
-        updatedAt: '2025-05-26T13:16:42.000Z',
-      },
-      {
-        uuid: '6b84a91f-ab0c-48b7-b82a-5d5e9156f340',
         name: 'John Doe',
         username: 'johndoe',
-        email: 'johndoe@mail.com',
+        email: 'johndoe@gmail.com',
         role: 'admin',
-        face_embedding: null,
-        createdAt: '2025-05-26T13:16:42.000Z',
-        updatedAt: '2025-05-26T13:16:42.000Z',
+        photo_url: 'http://www.neopresensi.com/uploads/user/file-xxx.jpeg',
+      },
+      {
+        uuid: '343435454-ab0c-48b7-b82a-5d5e9156f340',
+        name: 'John Smith',
+        username: 'johnsmith',
+        email: 'johnsmith@gmail.com',
+        role: 'guru',
+        photo_url: null,
       },
     ],
   })

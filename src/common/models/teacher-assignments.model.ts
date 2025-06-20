@@ -33,13 +33,13 @@ export class TeacherAssignment extends Model {
   @Column({ type: DataType.UUID })
   subject_id: string;
 
-  @BelongsTo(() => User, { foreignKey: 'user_id' })
+  @BelongsTo(() => User, { foreignKey: 'user_id', onDelete: 'CASCADE' })
   user: User;
 
-  @BelongsTo(() => Classes, { foreignKey: 'class_id' })
+  @BelongsTo(() => Classes, { foreignKey: 'class_id', onDelete: 'CASCADE' })
   classes: Classes;
 
-  @BelongsTo(() => Subject, { foreignKey: 'subject_id' })
+  @BelongsTo(() => Subject, { foreignKey: 'subject_id', onDelete: 'CASCADE' })
   subject: Subject;
 
   @HasMany(() => Schedule, { foreignKey: 'teacher_id', onDelete: 'CASCADE' })

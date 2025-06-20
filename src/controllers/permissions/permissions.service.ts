@@ -2,7 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { Op } from 'sequelize';
 import { ResponseDto } from 'src/common/dto';
 import { PermissionStatus } from 'src/common/enums';
-import { Permission } from 'src/common/models';
+import { Permission, User } from 'src/common/models';
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -30,7 +30,7 @@ export class PermissionsService {
     try {
       const count = await this.permissionRepository.count({
         where: {
-          user_uuid: userUuid,
+          user_id: userUuid,
           start_date: startDate,
           status: ['pending', 'approved'],
         },
@@ -55,7 +55,7 @@ export class PermissionsService {
 
       const count = await this.permissionRepository.count({
         where: {
-          user_uuid: userUuid,
+          user_id: userUuid,
           start_date: {
             [Op.between]: [startOfMonth, endOfMonth],
           },
@@ -118,8 +118,10 @@ export class PermissionsService {
         where,
         include: [
           {
-            association: 'user',
-            attributes: ['uuid', 'name', 'photo_url'],
+            model: User,
+            attributes: ['name', 'photo_url'],
+            // association: 'user',
+            // attributes: ['uuid', 'name', 'photo_url'],
           },
         ],
         order: [['createdAt', 'DESC']],
@@ -181,7 +183,7 @@ export class PermissionsService {
         where: { uuid },
         attributes: [
           'uuid',
-          'user_uuid',
+          'user_id',
           'start_date',
           'end_date',
           'reason',

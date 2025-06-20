@@ -4,7 +4,13 @@ import {
   ResponseDto,
   UpdateTeacherAssignmentDto,
 } from 'src/common/dto';
-import { Subject, TeacherAssignment, User } from 'src/common/models';
+import {
+  Classes,
+  ClassGroup,
+  Subject,
+  TeacherAssignment,
+  User,
+} from 'src/common/models';
 
 @Injectable()
 export class TeacherAssignmentsService {
@@ -24,7 +30,17 @@ export class TeacherAssignmentsService {
           {
             model: Subject,
             attributes: ['name'],
-          }
+          },
+          {
+            model: Classes,
+            attributes: ['grade'],
+            include: [
+              {
+                model: ClassGroup,
+                attributes: ['name'],
+              },
+            ],
+          },
         ],
       });
       return new ResponseDto({
@@ -48,6 +64,7 @@ export class TeacherAssignmentsService {
         where: {
           user_id: data.user_id,
           subject_id: data.subject_id,
+          class_id: data.class_id,
         },
       });
 

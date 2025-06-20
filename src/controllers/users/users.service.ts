@@ -4,6 +4,7 @@ import { User } from 'src/common/models';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as bcrypt from 'bcrypt';
+import { CreateUserDTO } from 'src/common/dto/data/create-user.dto';
 
 @Injectable()
 export class UsersService {
@@ -24,6 +25,35 @@ export class UsersService {
   private removePassword(user: User) {
     const { password, ...userWithoutPassword } = user.toJSON();
     return userWithoutPassword;
+  }
+
+  async createUser(data: CreateUserDTO): Promise<ResponseDto<User>> {
+    try {
+      const existingUser = await this.userRepository.findOne({
+        where: { email: data.email, username: data.username },
+      });
+      if (existingUser) {
+        return new ResponseDto<User>({
+          statusCode: 409,
+          message: 'Email or Username already exists',
+        });
+      }
+      const hashedPassword = await bcrypt.hash(data.password, 10);
+      const newUser = await this.userRepository.create({
+        ...data,
+        password: hashedPassword,
+      });
+      return new ResponseDto<User>({
+        statusCode: 201,
+        message: 'User created successfully',
+        data: this.removePassword(newUser) as User,
+      });
+    } catch (error) {
+      return new ResponseDto<User>({
+        statusCode: 500,
+        message: 'An error occurred while creating the user',
+      });
+    }
   }
 
   async getAllUsers(): Promise<ResponseDto<Partial<User>[]>> {

@@ -5,6 +5,7 @@ import {
   Get,
   Param,
   Patch,
+  Post,
   UploadedFile,
   UseGuards,
   UseInterceptors,
@@ -36,6 +37,7 @@ import { Role } from 'src/common/enums';
 import { FileUploadInterceptor } from 'src/common/interceptor';
 import { getFullFileUrl } from 'src/common/utils';
 import { ConfigService } from '@nestjs/config';
+import { CreateUserDTO } from 'src/common/dto/data/create-user.dto';
 
 @ApiTags('User')
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -45,6 +47,16 @@ export class UsersController {
     private readonly usersService: UsersService,
     private readonly configService: ConfigService,
   ) {}
+
+  @Post()
+  @Roles(Role.Admin)
+  @ApiOperation({
+    summary: 'Membuat user baru',
+    description: '🔐 Memerlukan role `admin`.',
+  })
+  createUser(@Body() dto: CreateUserDTO) {
+    return this.usersService.createUser(dto);
+  }
 
   @ApiOperation({
     summary: 'Mendapatkan semua data user',
@@ -198,10 +210,7 @@ export class UsersController {
     status: 403,
     description: 'Forbidden: Hanya bisa diakses oleh role admin',
   })
-  updateUserByUuid(
-    @Param('uuid') uuid: string,
-    @Body() dto: AdminUpdateDto,
-  ) {
+  updateUserByUuid(@Param('uuid') uuid: string, @Body() dto: AdminUpdateDto) {
     return this.usersService.updateUserByUuid(uuid, dto);
   }
 

@@ -128,7 +128,7 @@ export class PermissionsController {
     }
     return this.permissionsService.createPermission({
       ...createPermissionDto,
-      user_uuid: user.uuid,
+      user_id: user.uuid,
       file_url: fileUrl,
       start_date: startDate,
       end_date: new Date(createPermissionDto.end_date),
@@ -176,7 +176,7 @@ export class PermissionsController {
     return this.permissionsService.getPermissionsThisMonth(user.uuid);
   }
 
-  @Patch(':uuid/status')
+  @Patch(':uuid')
   @Roles(Role.Admin)
   @ApiOperation({
     summary: 'Ubah status izin (Admin)',

@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsNumber, IsUUID } from 'class-validator';
+import { IsInt, IsNotEmpty, IsNumber, IsUUID } from 'class-validator';
 
 export class CreateClassesDto {
   @ApiProperty({
@@ -7,7 +7,7 @@ export class CreateClassesDto {
     description:
       'Grade level of the class, e.g., 7 for first grade, 8 for second grade, etc.',
   })
-  @IsNumber()
+  @IsInt()
   grade: number;
 
   @ApiProperty({

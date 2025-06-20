@@ -27,6 +27,30 @@ export class CctvConfigsService {
     }
   }
 
+  async findByUuid(uuid: string): Promise<ResponseDto<CCTVConfig>> {
+    try {
+      const cctv = await this.cctvConfigsRepository.findOne({
+        where: { uuid },
+      });
+      if (!cctv) {
+        return new ResponseDto({
+          statusCode: 404,
+          message: 'CCTV configuration not found',
+        });
+      }
+      return new ResponseDto<CCTVConfig>({
+        statusCode: 200,
+        message: 'CCTV configuration fetched successfully',
+        data: cctv,
+      });
+    } catch (error) {
+      return new ResponseDto({
+        statusCode: 500,
+        message: 'Error fetching CCTV configuration: ' + error.message,
+      });
+    }
+  }
+
   async create(data: CreateCctvConfigsDto): Promise<ResponseDto<CCTVConfig>> {
     try {
       const cctv = await this.cctvConfigsRepository.create({ ...data });
