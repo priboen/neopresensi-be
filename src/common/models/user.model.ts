@@ -10,9 +10,7 @@ import {
 } from 'sequelize-typescript';
 import { Attendance } from './attendances.model';
 import { TeacherAssignment } from './teacher-assignments.model';
-import { MeetingAttendance } from './meeting-attendances.model';
 import { Permission } from './permissions.model';
-import { MeetingInvitation } from './meeting-invitations.model';
 
 @Table({ tableName: 'users', timestamps: true })
 export class User extends Model {
@@ -54,12 +52,6 @@ export class User extends Model {
     onDelete: 'CASCADE',
   })
   teacherAssignments: TeacherAssignment[];
-
-  @HasMany(() => MeetingInvitation, {
-    foreignKey: 'user_id',
-    onDelete: 'CASCADE',
-  })
-  meetingInvitations: MeetingInvitation[];
 
   @HasMany(() => Permission, { foreignKey: 'user_id', onDelete: 'CASCADE' })
   permissions: Permission[];

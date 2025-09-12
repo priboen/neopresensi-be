@@ -21,13 +21,14 @@ import {
 } from 'src/common/dto';
 
 @ApiTags('Face Embedding')
-@UseGuards(JwtAuthGuard, RolesGuard)
+@UseGuards(RolesGuard)
 @Controller('face-embedding')
 export class FaceEmbeddingController {
   constructor(private readonly faceEmbeddingService: FaceEmbeddingService) {}
 
   @Patch()
-  @Roles(Role.Teacher)
+  @UseGuards(JwtAuthGuard)
+  // @Roles(Role.Teacher)
   @ApiOperation({
     summary: 'Update own face embedding',
     description:
@@ -55,6 +56,7 @@ export class FaceEmbeddingController {
   }
 
   @Get()
+  @UseGuards(JwtAuthGuard)
   @Roles(Role.Teacher)
   @ApiOperation({
     summary: 'Retrieve own face embedding',
@@ -75,6 +77,7 @@ export class FaceEmbeddingController {
   }
 
   @Delete(':identifier')
+  @UseGuards(JwtAuthGuard)
   @Roles(Role.Admin)
   @ApiOperation({
     summary: 'Delete face embedding (Admin only)',
@@ -110,5 +113,10 @@ export class FaceEmbeddingController {
     return this.faceEmbeddingService.deleteFaceEmbeddingByIdentifier(
       identifier,
     );
+  }
+
+  @Get('/flask-get')
+  async getFlaskFaceEmbedding() {
+    return this.faceEmbeddingService.getAllFaceEmbeddings();
   }
 }

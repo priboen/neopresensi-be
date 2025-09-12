@@ -103,8 +103,7 @@ export class PermissionsController {
         message: 'File upload is required',
       });
 
-    const filePath = await this.permissionsService.uploadFileToPermissions(file);
-    const fileUrl = getFullFileUrl(filePath, this.configService);
+    const fileUrl = await this.permissionsService.uploadFileToPermissions(file);
     const startDate = new Date(createPermissionDto.start_date);
     const hasConflict = await this.permissionsService.hasOverlappingPermission(
       user.uuid,
@@ -157,6 +156,7 @@ export class PermissionsController {
   }
 
   @Get('this-month')
+  @Roles(Role.Teacher)
   @ApiOperation({
     summary: 'Lihat izin bulan ini',
     description:

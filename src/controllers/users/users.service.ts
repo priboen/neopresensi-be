@@ -5,11 +5,13 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as bcrypt from 'bcrypt';
 import { CreateUserDTO } from 'src/common/dto/data/create-user.dto';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class UsersService {
   constructor(
     @Inject('USER_REPOSITORY') private readonly userRepository: typeof User,
+    private readonly configService: ConfigService,
   ) {}
 
   async uploadUserAvatar(file: Express.Multer.File): Promise<string> {
@@ -19,7 +21,27 @@ export class UsersService {
     }
     const newPath = path.join(destFolder, path.basename(file.path));
     fs.renameSync(file.path, newPath);
-    return `uploads/user/${path.basename(file.path)}`;
+    const host = this.configService.get<string>('APP_HOST');
+    const port = this.configService.get<number>('APP_PORT');
+    const relativePath = `/user/${path.basename(file.path)}`;
+    return `http://${host}:${port}/uploads${relativePath}`;
+  }
+
+  private getLocalPathFromUrl(urlOrPath: string): string | null {
+    try {
+      // Coba perlakukan sebagai URL lengkap
+      const parsedUrl = new URL(urlOrPath);
+      // Hapus garis miring di awal dan ganti /uploads/ menjadi uploads/
+      const cleanPath = parsedUrl.pathname.replace(/^\/uploads\//, 'uploads/');
+      return path.join(process.cwd(), cleanPath);
+    } catch (error) {
+      // Jika gagal, anggap itu adalah path parsial (data lama)
+      // Pastikan tidak ada / di awal
+      const cleanPath = urlOrPath.startsWith('/')
+        ? urlOrPath.substring(1)
+        : urlOrPath;
+      return path.join(process.cwd(), cleanPath);
+    }
   }
 
   private removePassword(user: User) {
@@ -150,13 +172,14 @@ export class UsersService {
           message: 'User not found or no photo to delete',
         });
       }
+      const photoUrl = user.getDataValue('photo_url');
       try {
-        const parsedUrl = new URL(user.getDataValue('photo_url'));
-        const photoPath = path.resolve(
-          process.cwd(),
-          parsedUrl.pathname.replace(/^\/+/, ''),
-        );
-        if (fs.existsSync(photoPath) && fs.statSync(photoPath).isFile()) {
+        const photoPath = this.getLocalPathFromUrl(photoUrl);
+        if (
+          photoPath &&
+          fs.existsSync(photoPath) &&
+          fs.statSync(photoPath).isFile()
+        ) {
           fs.unlinkSync(photoPath);
         }
         await user.update({ photo_url: null });
@@ -198,12 +221,8 @@ export class UsersService {
         const oldUrl = user.getDataValue('photo_url');
         if (oldUrl && oldUrl !== newPhotoUrl) {
           try {
-            const parsedUrl = new URL(oldUrl);
-            const oldFilePath = path.join(
-              process.cwd(),
-              parsedUrl.pathname.replace(/^\/+/, ''),
-            );
-            if (fs.existsSync(oldFilePath)) {
+            const oldFilePath = this.getLocalPathFromUrl(oldUrl);
+            if (oldFilePath && fs.existsSync(oldFilePath)) {
               fs.unlinkSync(oldFilePath);
             }
           } catch (err) {

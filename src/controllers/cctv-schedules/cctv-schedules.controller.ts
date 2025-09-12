@@ -10,11 +10,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { CctvSchedulesService } from './cctv-schedules.service';
-import {
-  ApiOperation,
-  ApiResponse,
-  ApiTags,
-} from '@nestjs/swagger';
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard, RolesGuard } from 'src/common/guards';
 import { Role } from 'src/common/enums';
 import { Roles } from 'src/common/decorators';
@@ -32,8 +28,6 @@ import {
 } from 'src/common/dto/responses/cctv-schedule/cctv-schedule-response.dto';
 
 @ApiTags('CCTV Schedules')
-@UseGuards(JwtAuthGuard, RolesGuard)
-@Roles(Role.Admin)
 @Controller('cctv-schedules')
 export class CctvSchedulesController {
   constructor(private readonly cctvSchedulesService: CctvSchedulesService) {}
@@ -68,7 +62,14 @@ export class CctvSchedulesController {
     return this.cctvSchedulesService.findAll();
   }
 
+  @Get(':day')
+  async getCCTVScheduleByDay(@Param('day') day: string) {
+    return this.cctvSchedulesService.getCCTVScheduleByDay(day);
+  }
+
   @Post()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.Admin)
   @ApiOperation({
     summary: 'Create a new CCTV schedule',
     description: 'This endpoint allows the creation of a new CCTV schedule.',
@@ -98,6 +99,8 @@ export class CctvSchedulesController {
   }
 
   @Patch(':uuid')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.Admin)
   @ApiOperation({
     summary: 'Update an existing CCTV schedule',
     description:
@@ -131,6 +134,8 @@ export class CctvSchedulesController {
   }
 
   @Delete(':uuid')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.Admin)
   @ApiOperation({
     summary: 'Delete a CCTV schedule',
     description:

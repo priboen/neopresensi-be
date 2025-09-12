@@ -8,7 +8,7 @@ export * from './class-group';
 export * from './classes';
 export * from './cctv-config';
 export * from './cctv-schedule';
-export * from './meeting';
+// export * from './meeting';
 export * from './subject';
 export * from './teacher-assignment';
 export * from './schedule';

@@ -4,9 +4,9 @@ import {
   CCTVSchedule,
   Classes,
   ClassGroup,
-  Meeting,
-  MeetingAttendance,
-  MeetingInvitation,
+  // Meeting,
+  // MeetingAttendance,
+  // MeetingInvitation,
   Permission,
   Schedule,
   Subject,
@@ -59,25 +59,25 @@ export const attendanceProvider = {
   useValue: Attendance,
 };
 
-export const meetingProvider = {
-  provide: 'MEETING_REPOSITORY',
-  useValue: Meeting,
-};
+// export const meetingProvider = {
+//   provide: 'MEETING_REPOSITORY',
+//   useValue: Meeting,
+// };
 
-export const meetingAttendanceProvider = {
-  provide: 'MEETING_ATTENDANCE_REPOSITORY',
-  useValue: MeetingAttendance,
-};
+// export const meetingAttendanceProvider = {
+//   provide: 'MEETING_ATTENDANCE_REPOSITORY',
+//   useValue: MeetingAttendance,
+// };
 
 export const permissionProvider = {
   provide: 'PERMISSION_REPOSITORY',
   useValue: Permission,
 };
 
-export const meetingInvitationProvider = {
-  provide: 'MEETING_INVITATION_REPOSITORY',
-  useValue: MeetingInvitation,
-};
+// export const meetingInvitationProvider = {
+//   provide: 'MEETING_INVITATION_REPOSITORY',
+//   useValue: MeetingInvitation,
+// };
 
 export const modelProviders = [
   userProvider,
@@ -89,8 +89,8 @@ export const modelProviders = [
   cctvConfigProvider,
   cctvScheduleProvider,
   attendanceProvider,
-  meetingProvider,
-  meetingAttendanceProvider,
+  // meetingProvider,
+  // meetingAttendanceProvider,
   permissionProvider,
-  meetingInvitationProvider,
+  // meetingInvitationProvider,
 ];

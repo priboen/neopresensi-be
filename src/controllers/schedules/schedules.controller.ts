@@ -6,10 +6,14 @@ import {
   Param,
   Patch,
   Post,
+  UseGuards,
 } from '@nestjs/common';
 import { SchedulesService } from './schedules.service';
 import { CreateScheduleDto, GetSchedulesResponseDto } from 'src/common/dto';
 import { ApiResponse } from '@nestjs/swagger';
+import { JwtAuthGuard } from 'src/common/guards';
+import { CurrentUser } from 'src/common/decorators';
+import { JwtPayload } from 'src/common/interfaces';
 
 @Controller('schedules')
 export class SchedulesController {
@@ -19,10 +23,19 @@ export class SchedulesController {
   @ApiResponse({
     status: 200,
     description: 'Get all schedules',
-    type: GetSchedulesResponseDto
+    type: GetSchedulesResponseDto,
   })
   async findAll() {
     return this.schedulesService.findAll();
+  }
+
+  @Get('/:day')
+  @UseGuards(JwtAuthGuard)
+  async getSchedulesByDate(
+    @CurrentUser() user: JwtPayload,
+    @Param('day') day: string,
+  ) {
+    return this.schedulesService.getScheduleByDay(user.uuid, day);
   }
 
   @Post()

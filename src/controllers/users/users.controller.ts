@@ -183,8 +183,7 @@ export class UsersController {
   ) {
     let photoUrl: string | undefined;
     if (file) {
-      const filePath = await this.usersService.uploadUserAvatar(file);
-      photoUrl = getFullFileUrl(filePath, this.configService);
+      photoUrl = await this.usersService.uploadUserAvatar(file);
     }
     return this.usersService.updateProfile(user.uuid, dto, photoUrl);
   }

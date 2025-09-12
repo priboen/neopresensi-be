@@ -1,4 +1,8 @@
-import { Inject, Injectable } from '@nestjs/common';
+import {
+  Inject,
+  Injectable,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import {
   CreateScheduleDto,
   ResponseDto,
@@ -21,6 +25,85 @@ export class SchedulesService {
     @Inject('TEACHER_ASSIGNMENT_REPOSITORY')
     private readonly teacherAssignmentRepository: typeof TeacherAssignment,
   ) {}
+
+  async getScheduleByDay(
+    userUuid: string,
+    day: string,
+  ): Promise<
+    ResponseDto<
+      {
+        day: string;
+        schedule: Array<{
+          subject: string;
+          class: string;
+          start_time: string;
+          end_time: string;
+        }>;
+      }[]
+    >
+  > {
+    try {
+      // 1) Ambil data sebagai Model Instances (raw: false)
+      const rawSchedules = await this.scheduleRepository.findAll({
+        where: { day },
+        include: [
+          {
+            model: TeacherAssignment,
+            as: 'teacherAssignment',
+            where: { user_id: userUuid },
+            include: [
+              { model: Subject, as: 'subject', attributes: ['name'] },
+              {
+                model: Classes,
+                as: 'classes',
+                attributes: ['grade'],
+                include: [
+                  { model: ClassGroup, as: 'group', attributes: ['name'] },
+                ],
+              },
+            ],
+          },
+        ],
+        order: [['start_time', 'ASC']],
+        // jangan pakai raw: true di sini!
+      });
+
+      // 2) Pakai getDataValue untuk ambil nested associations
+      const compact = rawSchedules
+        .map((schedule) => {
+          // ambil Model Instance teacherAssignment
+          const ta = schedule.getDataValue('teacherAssignment');
+          if (!ta) return null;
+
+          // kemudian ambil nested subject & classes.group
+          const subject = ta.getDataValue('subject')?.getDataValue('name');
+          const cls = ta.getDataValue('classes');
+          const grade = cls?.getDataValue('grade');
+          const group = cls?.getDataValue('group')?.getDataValue('name');
+
+          if (!subject || !grade || !group) return null;
+
+          return {
+            subject,
+            class: `${grade} ${group}`,
+            start_time: schedule.getDataValue('start_time'),
+            end_time: schedule.getDataValue('end_time'),
+          };
+        })
+        .filter((x): x is NonNullable<typeof x> => x !== null);
+
+      const data = compact.length ? [{ day, schedule: compact }] : [];
+
+      return {
+        statusCode: 200,
+        message: 'Schedules fetched successfully',
+        data,
+      };
+    } catch (err) {
+      console.error('Error fetching schedules:', err);
+      throw new InternalServerErrorException('Error fetching schedules');
+    }
+  }
 
   // async findAll(): Promise<ResponseDto<Schedule[]>> {
   //   try {
@@ -203,12 +286,12 @@ export class SchedulesService {
           end_time: data.end_time,
           teacher_id: teacherAssignment.getDataValue('uuid'),
         },
-      })
-      if( existsSchedule) {
+      });
+      if (existsSchedule) {
         throw new ResponseDto({
           statusCode: 409,
           message: 'Schedule already exists for this time slot',
-        })
+        });
       }
       const schedule = await this.scheduleRepository.create({ ...data });
       if (!schedule) {

@@ -3,7 +3,7 @@ import { Op } from 'sequelize';
 import { ResponseDto } from 'src/common/dto';
 import { CreateCctvScheduleDto } from 'src/common/dto/data/create-cctv-schedule.dto';
 import { UpdateCctvScheduleDto } from 'src/common/dto/data/update-cctv-schedule.dto';
-import { CCTVSchedule } from 'src/common/models';
+import { CCTVConfig, CCTVSchedule } from 'src/common/models';
 
 @Injectable()
 export class CctvSchedulesService {
@@ -14,7 +14,15 @@ export class CctvSchedulesService {
 
   async findAll(): Promise<ResponseDto<CCTVSchedule[]>> {
     try {
-      const cctvSchedules = await this.cctvScheduleRepository.findAll();
+      const cctvSchedules = await this.cctvScheduleRepository.findAll({
+        include: [
+          {
+            model: CCTVConfig,
+            as: 'cctvConfig',
+            attributes: ['name', 'rtsp_url'],
+          },
+        ],
+      });
       return new ResponseDto<CCTVSchedule[]>({
         statusCode: 200,
         message: 'CCTV schedules fetched successfully',
@@ -24,6 +32,40 @@ export class CctvSchedulesService {
       throw new ResponseDto({
         statusCode: 500,
         message: 'Error fetching CCTV schedules: ' + error.message,
+      });
+    }
+  }
+
+  async getCCTVScheduleByDay(
+    day: string,
+  ): Promise<ResponseDto<CCTVSchedule[]>> {
+    try {
+      const cctvSchedules = await this.cctvScheduleRepository.findAll({
+        where: { day },
+        include: [
+          {
+            model: CCTVConfig,
+            as: 'cctvConfig',
+            attributes: ['name', 'rtsp_url'],
+          },
+        ],
+      });
+      if (cctvSchedules.length === 0) {
+        return new ResponseDto<CCTVSchedule[]>({
+          statusCode: 404,
+          message: `No CCTV schedules found for ${day}`,
+          data: [],
+        });
+      }
+      return new ResponseDto<CCTVSchedule[]>({
+        statusCode: 200,
+        message: `CCTV schedules for ${day} fetched successfully`,
+        data: cctvSchedules,
+      });
+    } catch (error) {
+      return new ResponseDto({
+        statusCode: 500,
+        message: 'Error fetching CCTV schedules by day: ' + error.message,
       });
     }
   }

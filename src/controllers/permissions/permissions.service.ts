@@ -5,12 +5,14 @@ import { PermissionStatus } from 'src/common/enums';
 import { Permission, User } from 'src/common/models';
 import * as fs from 'fs';
 import * as path from 'path';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class PermissionsService {
   constructor(
     @Inject('PERMISSION_REPOSITORY')
     private readonly permissionRepository: typeof Permission,
+    private readonly configService: ConfigService,
   ) {}
 
   async uploadFileToPermissions(file: Express.Multer.File): Promise<string> {
@@ -20,7 +22,27 @@ export class PermissionsService {
     }
     const newPath = path.join(destFolder, path.basename(file.path));
     fs.renameSync(file.path, newPath);
-    return `uploads/permissions/${path.basename(file.path)}`;
+    const host = this.configService.get<string>('APP_HOST');
+    const port = this.configService.get<number>('APP_PORT');
+    const relativePath = `/permissions/${path.basename(file.path)}`;
+    return `http://${host}:${port}/uploads${relativePath}`;
+  }
+
+  private getLocalPathFromUrl(urlOrPath: string): string | null {
+    try {
+      // Coba perlakukan sebagai URL lengkap
+      const parsedUrl = new URL(urlOrPath);
+      // Hapus garis miring di awal dan ganti /uploads/ menjadi uploads/
+      const cleanPath = parsedUrl.pathname.replace(/^\/uploads\//, 'uploads/');
+      return path.join(process.cwd(), cleanPath);
+    } catch (error) {
+      // Jika gagal, anggap itu adalah path parsial (data lama)
+      // Pastikan tidak ada / di awal
+      const cleanPath = urlOrPath.startsWith('/')
+        ? urlOrPath.substring(1)
+        : urlOrPath;
+      return path.join(process.cwd(), cleanPath);
+    }
   }
 
   async hasOverlappingPermission(
@@ -151,7 +173,7 @@ export class PermissionsService {
       const endOfMonth = new Date(year, month, 0);
       const permissions = await this.permissionRepository.findAll({
         where: {
-          user_uuid: userUuid,
+          user_id: userUuid,
           start_date: {
             [Op.between]: [startOfMonth, endOfMonth],
           },

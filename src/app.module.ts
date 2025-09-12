@@ -17,12 +17,21 @@ import { MeetingInvitationsModule } from './controllers/meeting-invitations/meet
 import { SubjectsModule } from './controllers/subjects/subjects.module';
 import { TeacherAssignmentsModule } from './controllers/teacher-assignments/teacher-assignments.module';
 import { SchedulesModule } from './controllers/schedules/schedules.module';
+import { RtspStreamModule } from './controllers/rtsp-stream/rtsp-stream.module';
+import { AttendanceModule } from './controllers/attendance/attendance.module';
+import { DashboardModule } from './controllers/dashboard/dashboard.module';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { join } from 'path';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: '.env',
+    }),
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, '..', 'uploads'), // Sesuaikan path jika perlu
+      serveRoot: '/uploads/', // URL prefix, misal: http://.../uploads/
     }),
     MysqlModule,
     AuthModule,
@@ -34,11 +43,14 @@ import { SchedulesModule } from './controllers/schedules/schedules.module';
     ClassGroupModule,
     CctvConfigsModule,
     CctvSchedulesModule,
-    MeetingsModule,
-    MeetingInvitationsModule,
+    // MeetingsModule,
+    // MeetingInvitationsModule,
     SubjectsModule,
     TeacherAssignmentsModule,
     SchedulesModule,
+    RtspStreamModule,
+    AttendanceModule,
+    DashboardModule,
   ],
   controllers: [AppController],
   providers: [AppService],

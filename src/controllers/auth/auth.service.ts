@@ -107,4 +107,29 @@ export class AuthService {
       );
     }
   }
+
+  async authVerify(uuid: string): Promise<ResponseDto<User>> {
+    try {
+      const user = await this.userRepository.findOne({
+        where: { uuid },
+      });
+      if (!user) {
+        return new ResponseDto({
+          statusCode: 401,
+          message: 'User not found',
+        });
+      }
+      const removePassword = this.removePassword(user);
+      return new ResponseDto({
+        statusCode: 200,
+        message: 'User authenticated successfully',
+        data: removePassword,
+      });
+    } catch (error) {
+      throw new InternalServerErrorException(
+        'An error occurred during authentication verification: ' +
+          error.message,
+      );
+    }
+  }
 }

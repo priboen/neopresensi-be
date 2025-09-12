@@ -26,6 +26,9 @@ export class Attendance extends Model {
   @Column({ type: DataType.UUID, allowNull: false })
   user_id: string;
 
+  @Column({ type: DataType.DATEONLY, allowNull: false })
+  date: Date;
+
   @Column({ type: DataType.TIME, allowNull: false })
   check_in: string;
 

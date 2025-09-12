@@ -1,4 +1,4 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { ApiBody, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import {
@@ -12,6 +12,9 @@ import {
   LoginValidationErrorResponseDto,
   RegisterValidationErrorResponseDto,
 } from 'src/common/dto';
+import { CurrentUser } from 'src/common/decorators';
+import { JwtPayload } from 'src/common/interfaces';
+import { JwtAuthGuard } from 'src/common/guards';
 
 @Controller('auth')
 export class AuthController {
@@ -75,5 +78,16 @@ export class AuthController {
   @ApiBody({ type: RegisterDTO })
   async signUp(@Body() registerData: RegisterDTO) {
     return this.authService.register(registerData);
+  }
+
+  @Get('/verify')
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({
+    summary: 'Verifikasi Akun',
+    description:
+      'Endpoint untuk memverifikasi akun pengguna. Biasanya digunakan setelah pendaftaran.',
+  })
+  async verifyAccount(@CurrentUser() user: JwtPayload) {
+    return this.authService.authVerify(user.uuid);
   }
 }

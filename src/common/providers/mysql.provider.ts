@@ -6,9 +6,9 @@ import {
   CCTVSchedule,
   Classes,
   ClassGroup,
-  Meeting,
-  MeetingAttendance,
-  MeetingInvitation,
+  // Meeting,
+  // MeetingAttendance,
+  // MeetingInvitation,
   Permission,
   Schedule,
   Subject,
@@ -32,9 +32,9 @@ export const mysqlProvider = {
       Schedule,
       CCTVConfig,
       CCTVSchedule,
-      MeetingAttendance,
-      Meeting,
-      MeetingInvitation
+      // MeetingAttendance,
+      // Meeting,
+      // MeetingInvitation
     ]);
     try {
       await sequelize.authenticate();
